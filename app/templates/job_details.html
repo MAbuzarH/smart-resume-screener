@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}{{ job.title }} - Job Details{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Job Details</li>
+            </ol>
+        </nav>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="card">
+            <div class="card-body">
+                <h1 class="card-title">{{ job.title }}</h1>
+                <h4 class="card-subtitle mb-3 text-muted">{{ job.company }}</h4>
+                
+                <div class="mb-3">
+                    <strong>Location:</strong> {{ job.location }}
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Required Skills:</strong>
+                    <div class="mt-2">
+                        {% for skill in job.skills.split(',') %}
+                            <span class="badge bg-primary me-1">{{ skill.strip() }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <strong>Job Description:</strong>
+                    <p class="mt-2">{{ job.description }}</p>
+                </div>
+                
+                <a href="{{ url_for('main.apply', job_id=job.id) }}" class="btn btn-success btn-lg">Apply Now</a>
+                <a href="{{ url_for('main.index') }}" class="btn btn-secondary btn-lg">Back to Jobs</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
