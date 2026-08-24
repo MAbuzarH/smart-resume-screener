@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from app.models import Job, Application
 from app import db
+from app.services import extract_text_from_pdf
 import os
 import uuid
 from werkzeug.utils import secure_filename
@@ -65,31 +66,44 @@ def apply(job_id):
         if not resume_file.filename.lower().endswith('.pdf'):
             flash('Please upload your resume in PDF format only.', 'danger')
             return render_template('apply.html', title='Apply', job=job)
-            # Generate filename using original name + current date/time
+        
+        # Generate filename using original name + current date/time
         original_filename = secure_filename(resume_file.filename)
 
-    # Separate filename and extension
+        # Separate filename and extension
         original_name, file_extension = os.path.splitext(original_filename)
 
-    # Current date and time
+        # Current date and time
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-    # Final filename
+        # Final filename
         unique_filename = f"{original_name}_{timestamp}{file_extension}"
 
-    # Save file to uploads directory
+        # Save file to uploads directory
         upload_path = os.path.join(
             Config.UPLOAD_FOLDER,
             unique_filename
         )
-
+        
+        # Save the file
+        resume_file.save(upload_path)
+        
+        # Extract text from the uploaded PDF
+        resume_text = extract_text_from_pdf(upload_path)
+        
+        # If PDF extraction fails or returns empty text, clean up and show error
+        if not resume_text:
+            os.remove(upload_path)
+            flash('Unable to process your resume PDF. Please ensure it is a valid text-based PDF.', 'danger')
+            return render_template('apply.html', title='Apply', job=job)
         
         # Create application record
         application = Application(
             job_id=job_id,
             applicant_name=applicant_name,
             applicant_email=applicant_email,
-            resume_filename=unique_filename
+            resume_filename=unique_filename,
+            resume_text=resume_text
         )
         
         try:

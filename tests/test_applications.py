@@ -30,3 +30,13 @@ def test_application_job_relationship():
     """
     # Test implementation to be added in next phase
     pass
+
+
+def test_application_has_resume_text_field():
+    """
+    Test that Application model has the resume_text field.
+    """
+    # Check that the model has the resume_text attribute
+    application = Application()
+    assert hasattr(application, 'resume_text')
+    assert application.resume_text is None  # Should be None by default
