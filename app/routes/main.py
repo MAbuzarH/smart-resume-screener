@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from app.models import Job, Application
 from app import db
-from app.services import extract_text_from_pdf
+from app.services import extract_text_from_pdf, preprocess_text
 import os
 import uuid
 from werkzeug.utils import secure_filename
@@ -97,13 +97,17 @@ def apply(job_id):
             flash('Unable to process your resume PDF. Please ensure it is a valid text-based PDF.', 'danger')
             return render_template('apply.html', title='Apply', job=job)
         
-        # Create application record
+        # Preprocess the extracted text for future TF-IDF processing
+        processed_resume_text = preprocess_text(resume_text)
+        
+        # Create application record with both raw and processed text
         application = Application(
             job_id=job_id,
             applicant_name=applicant_name,
             applicant_email=applicant_email,
             resume_filename=unique_filename,
-            resume_text=resume_text
+            resume_text=resume_text,
+            processed_resume_text=processed_resume_text
         )
         
         try:

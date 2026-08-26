@@ -11,6 +11,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from app import create_app, db
 from app.models import Job
+from app.services import preprocess_job_description
 
 
 def seed_jobs():
@@ -69,14 +70,24 @@ def seed_jobs():
             ).first()
             
             if existing_job:
-                print(f"Skipped (already exists): {job_data['title']}")
+                # Update existing job with processed description if missing
+                if not existing_job.processed_description:
+                    existing_job.processed_description = preprocess_job_description(existing_job.description)
+                    db.session.commit()
+                    print(f"Updated (added processed description): {job_data['title']}")
+                else:
+                    print(f"Skipped (already exists): {job_data['title']}")
             else:
+                # Preprocess the job description
+                processed_description = preprocess_job_description(job_data['description'])
+                
                 job = Job(
                     title=job_data['title'],
                     company=job_data['company'],
                     location=job_data['location'],
                     description=job_data['description'],
-                    skills=job_data['skills']
+                    skills=job_data['skills'],
+                    processed_description=processed_description
                 )
                 db.session.add(job)
                 db.session.commit()

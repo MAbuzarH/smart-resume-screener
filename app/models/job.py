@@ -12,6 +12,7 @@ class Job(db.Model):
     location = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=False)
     skills = db.Column(db.Text, nullable=False)
+    processed_description = db.Column(db.Text, nullable=True, default='')
 
     # Relationship with applications
     applications = db.relationship('Application', backref='job', lazy=True, cascade='all, delete-orphan')

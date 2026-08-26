@@ -40,3 +40,13 @@ def test_application_has_resume_text_field():
     application = Application()
     assert hasattr(application, 'resume_text')
     assert application.resume_text is None  # Should be None by default
+
+
+def test_application_has_processed_resume_text_field():
+    """
+    Test that Application model has the processed_resume_text field.
+    """
+    # Check that the model has the processed_resume_text attribute
+    application = Application()
+    assert hasattr(application, 'processed_resume_text')
+    assert application.processed_resume_text is None  # Should be None by default

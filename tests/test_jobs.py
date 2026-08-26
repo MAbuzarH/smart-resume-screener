@@ -30,3 +30,13 @@ def test_job_relationship_with_applications():
     """
     # Test implementation to be added in next phase
     pass
+
+
+def test_job_has_processed_description_field():
+    """
+    Test that Job model has the processed_description field.
+    """
+    # Check that the model has the processed_description attribute
+    job = Job()
+    assert hasattr(job, 'processed_description')
+    assert job.processed_description is None  # Should be None by default

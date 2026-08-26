@@ -36,5 +36,11 @@ class Application(db.Model):
         default=''
     )
 
+    processed_resume_text = db.Column(
+        db.Text,
+        nullable=True,
+        default=''
+    )
+
     def __repr__(self):
         return f'<Application {self.applicant_name} for Job {self.job_id}>'
