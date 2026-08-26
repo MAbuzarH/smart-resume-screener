@@ -42,5 +42,10 @@ class Application(db.Model):
         default=''
     )
 
+    match_score = db.Column(
+        db.Float,
+        nullable=True
+    )
+
     def __repr__(self):
         return f'<Application {self.applicant_name} for Job {self.job_id}>'

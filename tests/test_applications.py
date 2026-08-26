@@ -50,3 +50,13 @@ def test_application_has_processed_resume_text_field():
     application = Application()
     assert hasattr(application, 'processed_resume_text')
     assert application.processed_resume_text is None  # Should be None by default
+
+
+def test_application_has_match_score_field():
+    """
+    Test that Application model has the match_score field.
+    """
+    # Check that the model has the match_score attribute
+    application = Application()
+    assert hasattr(application, 'match_score')
+    assert application.match_score is None  # Should be None by default
