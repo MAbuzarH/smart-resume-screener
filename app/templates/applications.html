@@ -15,58 +15,132 @@
             </a>
         </div>
 
-        {% if applications %}
+        {% if rankings_by_job %}
 
-            <div class="table-responsive">
+            {% for job_id, ranked_candidates in rankings_by_job.items() %}
 
-                <table class="table table-striped table-hover align-middle">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{{ ranked_candidates[0].application.job.title }} at {{ ranked_candidates[0].application.job.company }}</h5>
+                        <a href="{{ url_for('main.job_applications', job_id=job_id) }}" class="btn btn-sm btn-light">View All Candidates</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Applicant Name</th>
+                                        <th>Email Address</th>
+                                        <th>Resume File</th>
+                                        <th>Final Match Score</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for candidate in ranked_candidates %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ candidate.rank }}</strong>
+                                            </td>
+                                            <td>
+                                                {{ candidate.application.applicant_name }}
+                                            </td>
+                                            <td>
+                                                {{ candidate.application.applicant_email }}
+                                            </td>
+                                            <td>
+                                                {{ candidate.application.resume_filename }}
+                                            </td>
+                                            <td>
+                                                {% if candidate.final_match_score is not none %}
+                                                    <strong>{{ "%.2f"|format(candidate.final_match_score) }}%</strong>
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        TF-IDF: {{ "%.2f"|format(candidate.application.similarity_score or candidate.application.match_score or 0) }}% | 
+                                                        Skills: {{ "%.2f"|format(candidate.application.skill_match_score or 0) }}%
+                                                    </small>
+                                                {% elif candidate.match_score is not none %}
+                                                    {{ "%.2f"|format(candidate.match_score) }}%
+                                                    <br>
+                                                    <small class="text-muted">(Legacy score)</small>
+                                                {% else %}
+                                                    N/A
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('main.application_details', application_id=candidate.application.id) }}" class="btn btn-sm btn-info">
+                                                    View Analysis
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
 
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Applicant Name</th>
-                            <th>Email Address</th>
-                            <th>Applied Job</th>
-                            <th>Resume File</th>
-                            <th>Match Score</th>
-                        </tr>
-                    </thead>
+            {% endfor %}
 
-                    <tbody>
+        {% elif applications %}
 
-                        {% for application in applications %}
-
-                            <tr>
-                                <td>
-                                    {{ application.applicant_name }}
-                                </td>
-
-                                <td>
-                                    {{ application.applicant_email }}
-                                </td>
-
-                                <td>
-                                    {{ application.job.title }}
-                                </td>
-
-                                <td>
-                                    {{ application.resume_filename }}
-                                </td>
-
-                                <td>
-                                    {% if application.match_score is not none %}
-                                        {{ "%.2f"|format(application.match_score) }}%
-                                    {% else %}
-                                        N/A
-                                    {% endif %}
-                                </td>
-                            </tr>
-
-                        {% endfor %}
-
-                    </tbody>
-
-                </table>
-
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Applicant Name</th>
+                                    <th>Email Address</th>
+                                    <th>Applied Job</th>
+                                    <th>Resume File</th>
+                                    <th>Final Match Score</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for application in applications %}
+                                    <tr>
+                                        <td>
+                                            {{ application.applicant_name }}
+                                        </td>
+                                        <td>
+                                            {{ application.applicant_email }}
+                                        </td>
+                                        <td>
+                                            {{ application.job.title }}
+                                        </td>
+                                        <td>
+                                            {{ application.resume_filename }}
+                                        </td>
+                                        <td>
+                                            {% if application.final_match_score is not none %}
+                                                <strong>{{ "%.2f"|format(application.final_match_score) }}%</strong>
+                                                <br>
+                                                <small class="text-muted">
+                                                    TF-IDF: {{ "%.2f"|format(application.similarity_score or application.match_score or 0) }}% | 
+                                                    Skills: {{ "%.2f"|format(application.skill_match_score or 0) }}%
+                                                </small>
+                                            {% elif application.match_score is not none %}
+                                                {{ "%.2f"|format(application.match_score) }}%
+                                                <br>
+                                                <small class="text-muted">(Legacy score)</small>
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('main.application_details', application_id=application.id) }}" class="btn btn-sm btn-info">
+                                                View Analysis
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
         {% else %}

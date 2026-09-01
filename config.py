@@ -18,3 +18,13 @@ class Config:
     UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB max file size
     ALLOWED_EXTENSIONS = {'pdf'}
+    
+    # Scoring weights for final match score calculation
+    # These weights must sum to 1.0 and are validated at application startup
+    TFIDF_WEIGHT = 0.40  # TF-IDF/Cosine similarity weight (40%)
+    SKILL_WEIGHT = 0.60  # Skill matching weight (60%)
+    
+    # Screening category thresholds for candidate analysis
+    # These thresholds determine the screening category based on final match score
+    STRONG_MATCH_THRESHOLD = 80.0  # 80-100% = Strong Match
+    MODERATE_MATCH_THRESHOLD = 60.0  # 60-79.99% = Moderate Match, below 60% = Low Match

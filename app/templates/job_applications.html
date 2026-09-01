@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Smart Resume Screener{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-12">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Candidates for {{ job.title }}</h1>
+
+            <div>
+                <a href="{{ url_for('main.job_details', job_id=job.id) }}" class="btn btn-secondary me-2">
+                    Back to Job Details
+                </a>
+                <a href="{{ url_for('main.applications') }}" class="btn btn-primary">
+                    All Applications
+                </a>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">{{ job.title }}</h5>
+                <p class="card-text mb-0">
+                    <strong>Company:</strong> {{ job.company }}<br>
+                    <strong>Location:</strong> {{ job.location }}
+                </p>
+            </div>
+        </div>
+
+        {% if ranked_candidates %}
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Applicant Name</th>
+                                    <th>Email Address</th>
+                                    <th>Resume File</th>
+                                    <th>Final Match Score</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for candidate in ranked_candidates %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ candidate.rank }}</strong>
+                                        </td>
+                                        <td>
+                                            {{ candidate.application.applicant_name }}
+                                        </td>
+                                        <td>
+                                            {{ candidate.application.applicant_email }}
+                                        </td>
+                                        <td>
+                                            {{ candidate.application.resume_filename }}
+                                        </td>
+                                        <td>
+                                            {% if candidate.final_match_score is not none %}
+                                                <span class="badge {% if candidate.final_match_score >= 80 %}bg-success{% elif candidate.final_match_score >= 60 %}bg-primary{% elif candidate.final_match_score >= 40 %}bg-warning{% else %}bg-secondary{% endif %}">
+                                                    {{ "%.2f"|format(candidate.final_match_score) }}%
+                                                </span>
+                                                <br>
+                                                <small class="text-muted">
+                                                    TF-IDF: {{ "%.2f"|format(candidate.application.similarity_score or candidate.application.match_score or 0) }}% | 
+                                                    Skills: {{ "%.2f"|format(candidate.application.skill_match_score or 0) }}%
+                                                </small>
+                                            {% elif candidate.match_score is not none %}
+                                                <span class="badge {% if candidate.match_score >= 80 %}bg-success{% elif candidate.match_score >= 60 %}bg-primary{% elif candidate.match_score >= 40 %}bg-warning{% else %}bg-secondary{% endif %}">
+                                                    {{ "%.2f"|format(candidate.match_score) }}%
+                                                </span>
+                                                <br>
+                                                <small class="text-muted">(Legacy score)</small>
+                                            {% else %}
+                                                <span class="badge bg-secondary">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('main.application_details', application_id=candidate.application.id) }}" class="btn btn-sm btn-info">
+                                                View Analysis
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        {% else %}
+
+            <div class="alert alert-info">
+                No applications have been submitted for this job yet.
+            </div>
+
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}

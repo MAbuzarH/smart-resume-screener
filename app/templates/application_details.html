@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Smart Resume Screener{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-12">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Candidate Screening Analysis</h1>
+            <a href="{{ url_for('main.applications') }}" class="btn btn-secondary">
+                Back to Applications
+            </a>
+        </div>
+
+        <!-- Candidate Information -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Candidate Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Applicant Name:</strong> {{ application.applicant_name }}</p>
+                        <p><strong>Email Address:</strong> {{ application.applicant_email }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Applied Job:</strong> {{ job.title }}</p>
+                        <p><strong>Company:</strong> {{ job.company }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overall Match -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Overall Match</h5>
+            </div>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h2>
+                            {% if screening.final_score is not none %}
+                                {{ "%.2f"|format(screening.final_score) }}%
+                            {% else %}
+                                Not Scored
+                            {% endif %}
+                        </h2>
+                        <p class="text-muted mb-0">Final Match Score</p>
+                    </div>
+                    <div class="col-md-6">
+                        {% if screening.category == "Strong Match" %}
+                            <span class="badge bg-success fs-5">Strong Match</span>
+                        {% elif screening.category == "Moderate Match" %}
+                            <span class="badge bg-primary fs-5">Moderate Match</span>
+                        {% elif screening.category == "Low Match" %}
+                            <span class="badge bg-warning fs-5">Low Match</span>
+                        {% else %}
+                            <span class="badge bg-secondary fs-5">Not Scored</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Score Breakdown -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Score Breakdown</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4>
+                            {% if screening.tfidf_score is not none %}
+                                {{ "%.2f"|format(screening.tfidf_score) }}%
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </h4>
+                        <p class="text-muted mb-0">Resume Similarity (TF-IDF)</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h4>
+                            {% if screening.skill_score is not none %}
+                                {{ "%.2f"|format(screening.skill_score) }}%
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </h4>
+                        <p class="text-muted mb-0">Skill Match</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Skills Analysis -->
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">Skills Analysis</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <h5>{{ screening.required_skill_count }}</h5>
+                        <p class="text-muted mb-0">Required Skills</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h5>{{ screening.matched_skill_count }}</h5>
+                        <p class="text-muted mb-0">Matched Skills</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h5>{{ screening.required_skill_count - screening.matched_skill_count }}</h5>
+                        <p class="text-muted mb-0">Missing Skills</p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-success">Matched Skills:</h6>
+                        {% if screening.matched_skills %}
+                            <ul>
+                                {% for skill in screening.matched_skills %}
+                                    <li>{{ skill }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted">No matched skills</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-danger">Missing Skills:</h6>
+                        {% if screening.missing_skills %}
+                            <ul>
+                                {% for skill in screening.missing_skills %}
+                                    <li>{{ skill }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted">No missing skills</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Explanation -->
+        <div class="card mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">Screening Explanation</h5>
+            </div>
+            <div class="card-body">
+                <p>{{ screening.explanation }}</p>
+            </div>
+        </div>
+
+        <!-- Important Notice -->
+        <div class="alert alert-info">
+            <strong>Important Notice:</strong> Screening results are based on resume-to-job matching and are intended to support human review. They should not be treated as an automatic hiring decision. The final hiring decision remains with a human reviewer.
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
