@@ -10,7 +10,7 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from app import create_app, db
-from app.models import Job
+from app.models import Job, User
 from app.services import preprocess_job_description
 
 
@@ -96,5 +96,42 @@ def seed_jobs():
         print("Sample job seeding completed successfully.")
 
 
+def seed_admin_user():
+    """
+    Seed the database with an admin user for development.
+    This should only be used in development environments.
+    """
+    app = create_app()
+    
+    with app.app_context():
+        # Check if admin already exists
+        existing_admin = User.query.filter_by(email='admin@smartresume.com').first()
+        
+        if existing_admin:
+            print("Admin user already exists. Skipping admin creation.")
+            return
+        
+        # Create admin user
+        print("Creating admin user...")
+        admin = User(
+            full_name='Admin User',
+            email='admin@smartresume.com',
+            role='admin'
+        )
+        admin.set_password('admin123')  # Development password - change in production
+        
+        try:
+            db.session.add(admin)
+            db.session.commit()
+            print("Admin user created successfully!")
+            print("Email: admin@smartresume.com")
+            print("Password: admin123")
+            print("NOTE: Change this password in production!")
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error creating admin user: {e}")
+
+
 if __name__ == '__main__':
     seed_jobs()
+    seed_admin_user()

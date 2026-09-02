@@ -50,32 +50,63 @@
 
             <ul class="navbar-nav ms-auto">
 
-                <li class="nav-item">
-                    <a
-                        class="nav-link"
-                        href="{{ url_for('main.index') }}"
-                    >
-                        Home
-                    </a>
-                </li>
+                {% if session.get('user_id') %}
+                    <li class="nav-item">
+                        <a
+                            class="nav-link"
+                            href="{{ url_for('main.index') }}"
+                        >
+                            Home
+                        </a>
+                    </li>
 
-                <li class="nav-item">
-                    <a
-                        class="nav-link"
-                        href="{{ url_for('main.dashboard') }}"
-                    >
-                        Dashboard
-                    </a>
-                </li>
+                    {% if session.get('user_role') == 'employer' %}
+                        <li class="nav-item">
+                            <a
+                                class="nav-link"
+                                href="{{ url_for('main.dashboard') }}"
+                            >
+                                Dashboard
+                            </a>
+                        </li>
+                    {% endif %}
 
-                <li class="nav-item">
-                    <a
-                        class="nav-link"
-                        href="{{ url_for('main.applications') }}"
-                    >
-                        Applications
-                    </a>
-                </li>
+                    <li class="nav-item">
+                        <a
+                            class="nav-link"
+                            href="{{ url_for('auth.logout') }}"
+                        >
+                            Logout ({{ session.get('user_name') }})
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a
+                            class="nav-link"
+                            href="{{ url_for('main.index') }}"
+                        >
+                            Home
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a
+                            class="nav-link"
+                            href="{{ url_for('auth.login') }}"
+                        >
+                            Login
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a
+                            class="nav-link"
+                            href="{{ url_for('auth.register') }}"
+                        >
+                            Register
+                        </a>
+                    </li>
+                {% endif %}
 
             </ul>
 

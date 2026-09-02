@@ -23,11 +23,13 @@ def create_app(config_class=Config):
     db.init_app(app)
 
     # Import models so SQLAlchemy knows about them
-    from app.models import Job, Application
+    from app.models import Job, Application, User
 
     # Register blueprints
     from app.routes.main import bp as main_bp
+    from app.auth.routes import bp as auth_bp
     app.register_blueprint(main_bp)
+    app.register_blueprint(auth_bp)
 
     # Create database tables
     with app.app_context():

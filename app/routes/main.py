@@ -1,7 +1,8 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from app.models import Job, Application
 from app import db
 from app.services import extract_text_from_pdf, preprocess_text, calculate_match_score, rank_all_applications_by_job, rank_applications_by_job, calculate_skill_match, calculate_final_score, analyze_candidate, get_screening_category
+from app.auth.helpers import login_required, role_required
 import os
 import uuid
 import logging
@@ -31,6 +32,7 @@ def job_details(job_id):
     return render_template('job_details.html', title=job.title, job=job)
 
 @bp.route('/job/<int:job_id>/apply', methods=['GET', 'POST'])
+@login_required
 def apply(job_id):
     """
     Application form for a specific job.
@@ -216,6 +218,7 @@ def application_details(application_id):
 
 
 @bp.route('/dashboard', methods=['GET'])
+@role_required('employer', 'admin')
 def dashboard():
     """
     Recruiter dashboard - displays job selection and candidate rankings.

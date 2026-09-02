@@ -13,6 +13,16 @@ The prototype includes:
 - Applications listing page
 - SQLite database for data persistence
 - Basic responsive UI with Bootstrap 5
+- User authentication and role-based access control
+- Secure password hashing
+- Applicant and employer registration
+- Recruiter dashboard with candidate ranking
+- Resume text extraction and preprocessing
+- TF-IDF vectorization and cosine similarity matching
+- Skill-based matching system
+- Weighted final scoring model
+- Candidate screening and explainability
+- Comprehensive test suite
 
 **Note:** This is the prototype foundation only. Advanced features will be implemented in the final project phase.
 
@@ -109,15 +119,42 @@ Smart Resume Scanner/
    .venv\Scripts\activate
    ```
 
-2. **Run the application:**
+2. **Seed the database with sample data:**
+   ```bash
+   python scripts\seed_data.py
+   ```
+
+3. **Run the application:**
    ```bash
    python run.py
    ```
 
-3. **Open your browser and navigate to:**
+4. **Open your browser and navigate to:**
    ```
    http://127.0.0.1:5000
    ```
+
+## Authentication
+
+### Development Admin Account
+After running the seed script, a development admin account is created:
+- **Email:** admin@smartresume.com
+- **Password:** admin123
+- **Role:** Admin
+
+**Note:** Change this password in production environments.
+
+### User Roles
+- **Applicant:** Can browse jobs and submit applications
+- **Employer:** Can access the recruiter dashboard and view ranked candidates
+- **Admin:** Has full system access (foundation for future admin features)
+
+### Registration
+Public registration is available for:
+- Job Applicants
+- Employers/Recruiters
+
+Admin accounts cannot be created through public registration and must be created via the seed script or database operations.
 
 ## Prototype Features
 
@@ -153,6 +190,28 @@ The following features will be implemented in the final project phase (NOT in pr
 - Job open/closed status management
 - Advanced NLP features
 
+## Testing
+
+The project includes a comprehensive test suite. To run tests:
+
+```bash
+python -m pytest
+```
+
+The test suite covers:
+- Database models (Job, Application, User)
+- Authentication and authorization
+- Resume parsing and text extraction
+- Text preprocessing
+- TF-IDF vectorization
+- Cosine similarity matching
+- Skill-based matching
+- Weighted scoring models
+- Candidate ranking
+- Screening and explainability
+- Dashboard functionality
+- Integration tests
+
 ## Database Models
 
 ### Job Model
@@ -162,6 +221,7 @@ The following features will be implemented in the final project phase (NOT in pr
 - `location`: Job location
 - `description`: Job description
 - `skills`: Required skills
+- `processed_description`: Preprocessed job description for TF-IDF
 
 ### Application Model
 - `id`: Primary key
@@ -169,6 +229,21 @@ The following features will be implemented in the final project phase (NOT in pr
 - `applicant_name`: Applicant's full name
 - `applicant_email`: Applicant's email address
 - `resume_filename`: Uploaded resume filename
+- `resume_text`: Extracted resume text
+- `processed_resume_text`: Preprocessed resume text
+- `match_score`: Original TF-IDF match score (legacy)
+- `similarity_score`: TF-IDF/cosine similarity score
+- `skill_match_score`: Skill match percentage
+- `final_match_score`: Weighted final match score
+
+### User Model
+- `id`: Primary key
+- `full_name`: User's full name
+- `email`: User's email (unique)
+- `password_hash`: Securely hashed password
+- `role`: User role (applicant, employer, admin)
+- `is_active`: Account status
+- `created_at`: Account creation timestamp
 
 ## Development Notes
 
@@ -176,6 +251,9 @@ The following features will be implemented in the final project phase (NOT in pr
 - SQLite database is stored in the `instance/` directory
 - Uploaded resumes are stored in the `uploads/` directory
 - The virtual environment `.venv/` should never be modified or deleted
+- Passwords are securely hashed using Werkzeug's security functions
+- Authentication is required for job applications and dashboard access
+- The existing resume screening pipeline (PDF → Text → Preprocessing → TF-IDF → Similarity → Skill Matching → Scoring → Ranking → Screening) remains fully functional
 
 ## License
 

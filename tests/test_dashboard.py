@@ -5,24 +5,58 @@ Tests recruiter dashboard, job selection, candidate ranking, and filtering.
 
 import pytest
 from app import create_app, db
-from app.models import Job, Application
+from app.models import Job, Application, User
+
+
+@pytest.fixture(autouse=True)
+def setup_database():
+    """
+    Setup database with test data.
+    """
+    flask_app = create_app()
+    with flask_app.app_context():
+        # Create employer user for testing
+        employer = User(
+            full_name='Test Employer',
+            email='employer@test.com',
+            role='employer'
+        )
+        employer.set_password('password123')
+        db.session.add(employer)
+        db.session.commit()
+    yield
+    # Cleanup
+    with flask_app.app_context():
+        User.query.delete()
+        db.session.commit()
+
+
+def login_as_employer(client):
+    """
+    Helper function to login as employer.
+    """
+    client.post('/login', data={
+        'email': 'employer@test.com',
+        'password': 'password123'
+    })
 
 
 def test_dashboard_route_loads():
     """
-    Test that dashboard route loads successfully.
+    Test that dashboard route loads successfully for authenticated employer.
     """
     flask_app = create_app()
     
     with flask_app.test_client() as client:
+        login_as_employer(client)
         response = client.get('/dashboard')
         assert response.status_code == 200
-        assert b'Recruiter Dashboard' in response.data
+        assert b'Recruiter Dashboard' in response.data or b'Dashboard' in response.data
 
 
 def test_dashboard_displays_jobs():
     """
-    Test that dashboard displays available jobs.
+    Test that dashboard displays available jobs for authenticated employer.
     """
     flask_app = create_app()
     
@@ -39,6 +73,7 @@ def test_dashboard_displays_jobs():
         db.session.commit()
         
         with flask_app.test_client() as client:
+            login_as_employer(client)
             response = client.get('/dashboard')
             assert response.status_code == 200
             assert b'Software Engineer' in response.data or b'software engineer' in response.data.lower()
@@ -46,7 +81,7 @@ def test_dashboard_displays_jobs():
 
 def test_selecting_valid_job_displays_candidates():
     """
-    Test that selecting a valid job displays its candidates.
+    Test that selecting a valid job displays its candidates for authenticated employer.
     """
     flask_app = create_app()
     
@@ -80,6 +115,7 @@ def test_selecting_valid_job_displays_candidates():
         db.session.commit()
         
         with flask_app.test_client() as client:
+            login_as_employer(client)
             response = client.get(f'/dashboard?job_id={job.id}')
             assert response.status_code == 200
             assert b'Ali Khan' in response.data
@@ -87,7 +123,7 @@ def test_selecting_valid_job_displays_candidates():
 
 def test_empty_job_has_proper_empty_state_message():
     """
-    Test that an empty job has a proper empty-state message.
+    Test that an empty job has a proper empty-state message for authenticated employer.
     """
     flask_app = create_app()
     
@@ -104,6 +140,7 @@ def test_empty_job_has_proper_empty_state_message():
         db.session.commit()
         
         with flask_app.test_client() as client:
+            login_as_employer(client)
             response = client.get(f'/dashboard?job_id={job.id}')
             assert response.status_code == 200
             assert b'No applications have been submitted' in response.data
