@@ -17,8 +17,8 @@ def setup_database():
     with flask_app.app_context():
         # Create employer user for testing
         employer = User(
-            full_name='Test Employer',
-            email='employer@test.com',
+            full_name='Dashboard Test Employer',
+            email='dashboardemployer@test.com',
             role='employer'
         )
         employer.set_password('password123')
@@ -28,6 +28,8 @@ def setup_database():
     # Cleanup
     with flask_app.app_context():
         User.query.delete()
+        Job.query.delete()
+        Application.query.delete()
         db.session.commit()
 
 
@@ -36,7 +38,7 @@ def login_as_employer(client):
     Helper function to login as employer.
     """
     client.post('/login', data={
-        'email': 'employer@test.com',
+        'email': 'dashboardemployer@test.com',
         'password': 'password123'
     })
 
@@ -61,13 +63,17 @@ def test_dashboard_displays_jobs():
     flask_app = create_app()
     
     with flask_app.app_context():
-        # Create a test job
+        # Create employer user
+        employer = User.query.filter_by(email='dashboardemployer@test.com').first()
+        
+        # Create a test job belonging to the employer
         job = Job(
             title='Software Engineer',
             company='Test Company',
             location='Test Location',
             description='Test description',
-            skills='Python, Flask, SQL'
+            skills='Python, Flask, SQL',
+            employer_id=employer.id
         )
         db.session.add(job)
         db.session.commit()
@@ -86,13 +92,17 @@ def test_selecting_valid_job_displays_candidates():
     flask_app = create_app()
     
     with flask_app.app_context():
-        # Create a test job
+        # Create employer user
+        employer = User.query.filter_by(email='dashboardemployer@test.com').first()
+        
+        # Create a test job belonging to the employer
         job = Job(
             title='Software Engineer',
             company='Test Company',
             location='Test Location',
             description='Test description',
-            skills='Python, Flask, SQL'
+            skills='Python, Flask, SQL',
+            employer_id=employer.id
         )
         db.session.add(job)
         db.session.commit()
@@ -128,13 +138,17 @@ def test_empty_job_has_proper_empty_state_message():
     flask_app = create_app()
     
     with flask_app.app_context():
+        # Create employer user
+        employer = User.query.filter_by(email='dashboardemployer@test.com').first()
+        
         # Create a job with no applications
         job = Job(
             title='Software Engineer',
             company='Test Company',
             location='Test Location',
             description='Test description',
-            skills='Python, Flask'
+            skills='Python, Flask',
+            employer_id=employer.id
         )
         db.session.add(job)
         db.session.commit()

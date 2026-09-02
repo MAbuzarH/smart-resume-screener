@@ -8,16 +8,73 @@
     <div class="col-12">
 
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>Recruiter Dashboard</h1>
-            <a href="{{ url_for('main.index') }}" class="btn btn-secondary">
-                Back to Jobs
-            </a>
+            <h1>Employer Dashboard</h1>
+            <div>
+                <a href="{{ url_for('main.create_job') }}" class="btn btn-success">Create New Job</a>
+                <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Back to Jobs</a>
+            </div>
+        </div>
+
+        <!-- My Jobs -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">My Jobs</h5>
+            </div>
+            <div class="card-body">
+                {% if jobs %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Job Title</th>
+                                    <th>Company</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                    <th>Applications</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for job in jobs %}
+                                <tr>
+                                    <td>{{ job.title }}</td>
+                                    <td>{{ job.company }}</td>
+                                    <td>{{ job.location }}</td>
+                                    <td>
+                                        {% if job.is_open %}
+                                            <span class="badge bg-success">Open</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Closed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ job.applications|length }}</td>
+                                    <td>
+                                        <a href="{{ url_for('main.dashboard', job_id=job.id) }}" class="btn btn-sm btn-info">View Candidates</a>
+                                        <a href="{{ url_for('main.edit_job', job_id=job.id) }}" class="btn btn-sm btn-warning">Edit</a>
+                                        <form action="{{ url_for('main.toggle_job_status', job_id=job.id) }}" method="POST" style="display: inline;">
+                                            <button type="submit" class="btn btn-sm {% if job.is_open %}btn-danger{% else %}btn-success{% endif %}">
+                                                {% if job.is_open %}Close{% else %}Open{% endif %}
+                                            </button>
+                                        </form>
+                                        <a href="{{ url_for('main.employer_job_applicants', job_id=job.id) }}" class="btn btn-sm btn-primary">Applicants</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        You haven't created any jobs yet. <a href="{{ url_for('main.create_job') }}">Create your first job</a>.
+                    </div>
+                {% endif %}
+            </div>
         </div>
 
         <!-- Job Selection -->
         <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Select Job</h5>
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">View Candidate Rankings</h5>
             </div>
             <div class="card-body">
                 <form action="{{ url_for('main.dashboard') }}" method="GET" class="row align-items-end">
@@ -62,6 +119,13 @@
                             <h4>{{ selected_job.title }}</h4>
                             <p class="text-muted mb-2">{{ selected_job.company }}</p>
                             <p><strong>Location:</strong> {{ selected_job.location }}</p>
+                            <p><strong>Status:</strong>
+                                {% if selected_job.is_open %}
+                                    <span class="badge bg-success">Open</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Closed</span>
+                                {% endif %}
+                            </p>
                         </div>
                         <div class="col-md-6">
                             <p><strong>Required Skills:</strong></p>
@@ -216,6 +280,9 @@
                                             <td>
                                                 <a href="{{ url_for('main.application_details', application_id=candidate.application.id) }}" class="btn btn-sm btn-info">
                                                     View Analysis
+                                                </a>
+                                                <a href="{{ url_for('main.download_resume', application_id=candidate.application.id) }}" class="btn btn-sm btn-success">
+                                                    Download Resume
                                                 </a>
                                             </td>
                                         </tr>

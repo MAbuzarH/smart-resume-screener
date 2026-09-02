@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Smart Resume Screener{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Applicants</li>
+            </ol>
+        </nav>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Applicants for {{ job.title }} at {{ job.company }}</h5>
+            </div>
+            <div class="card-body">
+                {% if ranked_candidates %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Applicant Name</th>
+                                    <th>Email</th>
+                                    <th>Final Score</th>
+                                    <th>Screening Category</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for candidate in ranked_candidates %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>{{ candidate.applicant_name }}</td>
+                                    <td>{{ candidate.applicant_email }}</td>
+                                    <td>
+                                        {% if candidate.final_match_score is not none %}
+                                            {{ "%.1f"|format(candidate.final_match_score) }}%
+                                        {% else %}
+                                            Not Scored
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if candidate.screening_category == 'Strong Match' %}
+                                            <span class="badge bg-success">{{ candidate.screening_category }}</span>
+                                        {% elif candidate.screening_category == 'Moderate Match' %}
+                                            <span class="badge bg-warning text-dark">{{ candidate.screening_category }}</span>
+                                        {% elif candidate.screening_category == 'Low Match' %}
+                                            <span class="badge bg-danger">{{ candidate.screening_category }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ candidate.screening_category }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('main.application_details', application_id=candidate.id) }}" class="btn btn-sm btn-primary">View Analysis</a>
+                                        <a href="{{ url_for('main.download_resume', application_id=candidate.id) }}" class="btn btn-sm btn-success">Download Resume</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        No applications have been submitted for this job yet.
+                    </div>
+                {% endif %}
+                
+                <div class="mt-3">
+                    <a href="{{ url_for('main.dashboard', job_id=job.id) }}" class="btn btn-secondary">Back to Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

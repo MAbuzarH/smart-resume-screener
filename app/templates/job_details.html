@@ -34,6 +34,15 @@
                 </div>
                 
                 <div class="mb-3">
+                    <strong>Status:</strong>
+                    {% if job.is_open %}
+                        <span class="badge bg-success">Open</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Closed</span>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
                     <strong>Required Skills:</strong>
                     <div class="mt-2">
                         {% for skill in job.skills.split(',') %}
@@ -47,7 +56,11 @@
                     <p class="mt-2">{{ job.description }}</p>
                 </div>
                 
-                <a href="{{ url_for('main.apply', job_id=job.id) }}" class="btn btn-success btn-lg">Apply Now</a>
+                {% if job.is_open %}
+                    <a href="{{ url_for('main.apply', job_id=job.id) }}" class="btn btn-success btn-lg">Apply Now</a>
+                {% else %}
+                    <button class="btn btn-secondary btn-lg" disabled>Closed - Not Accepting Applications</button>
+                {% endif %}
                 <a href="{{ url_for('main.job_applications', job_id=job.id) }}" class="btn btn-info btn-lg">View Candidates</a>
                 <a href="{{ url_for('main.index') }}" class="btn btn-secondary btn-lg">Back to Jobs</a>
             </div>

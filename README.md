@@ -23,6 +23,10 @@ The prototype includes:
 - Weighted final scoring model
 - Candidate screening and explainability
 - Comprehensive test suite
+- Employer job management (create, edit, open/close jobs)
+- Job ownership and authorization
+- Secure resume download
+- Applicant management for employers
 
 **Note:** This is the prototype foundation only. Advanced features will be implemented in the final project phase.
 
@@ -134,6 +138,32 @@ Smart Resume Scanner/
    http://127.0.0.1:5000
    ```
 
+## Employer Management
+
+Employers can manage their job postings through the employer dashboard:
+
+### Creating Jobs
+- Navigate to Dashboard → Create New Job
+- Fill in job title, company, location, description, and required skills
+- Jobs are automatically associated with the logged-in employer
+- New jobs are created as "Open" by default
+
+### Managing Jobs
+- **Edit**: Modify job details (title, company, location, description, skills)
+- **Open/Close**: Toggle job status to accept or stop accepting applications
+- **View Candidates**: See ranked applicants for each job
+- **Download Resumes**: Securely download applicant resumes (employer-only)
+
+### Job Status
+- **Open**: Visible in public job listings, accepting applications
+- **Closed**: Hidden from public listings, not accepting new applications
+- Existing applications and scoring data remain intact when jobs are closed
+
+### Authorization
+- Employers can only manage their own jobs
+- Secure resume download with employer ownership verification
+- Role-based access control enforced server-side
+
 ## Authentication
 
 ### Development Admin Account
@@ -222,6 +252,10 @@ The test suite covers:
 - `description`: Job description
 - `skills`: Required skills
 - `processed_description`: Preprocessed job description for TF-IDF
+- `employer_id`: Foreign key to User (job owner)
+- `is_open`: Job status (Open/Closed)
+- `created_at`: Job creation timestamp
+- `updated_at`: Last update timestamp
 
 ### Application Model
 - `id`: Primary key

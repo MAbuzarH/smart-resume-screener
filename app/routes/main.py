@@ -1,14 +1,14 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-from app.models import Job, Application
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, send_file
+from app.models import Job, Application, User
 from app import db
 from app.services import extract_text_from_pdf, preprocess_text, calculate_match_score, rank_all_applications_by_job, rank_applications_by_job, calculate_skill_match, calculate_final_score, analyze_candidate, get_screening_category
-from app.auth.helpers import login_required, role_required
+from app.auth.helpers import login_required, role_required, get_current_user
 import os
 import uuid
 import logging
 from werkzeug.utils import secure_filename
 from config import Config
-from datetime import datetime
+from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
@@ -17,9 +17,9 @@ bp = Blueprint('main', __name__)
 @bp.route('/')
 def index():
     """
-    Home page - displays all available jobs from the database.
+    Home page - displays all available open jobs from the database.
     """
-    jobs = Job.query.all()
+    jobs = Job.query.filter_by(is_open=True).all()
     return render_template('home.html', title='Available Jobs', jobs=jobs)
 
 @bp.route('/job/<int:job_id>')
@@ -40,6 +40,11 @@ def apply(job_id):
     POST: Process the application submission.
     """
     job = Job.query.get_or_404(job_id)
+    
+    # Check if job is open
+    if not job.is_open:
+        flash('This job is currently closed and not accepting new applications.', 'warning')
+        return redirect(url_for('main.job_details', job_id=job_id))
     
     if request.method == 'POST':
         # Get form data
@@ -221,12 +226,17 @@ def application_details(application_id):
 @role_required('employer', 'admin')
 def dashboard():
     """
-    Recruiter dashboard - displays job selection and candidate rankings.
-    GET: Display job selection form and candidate rankings for selected job.
+    Recruiter dashboard - displays employer's jobs and candidate rankings.
+    GET: Display employer's jobs and candidate rankings for selected job.
     """
     try:
-        # Get all available jobs
-        jobs = Job.query.all()
+        current_user = get_current_user()
+        
+        # Get jobs belonging to the current employer (or all jobs for admin)
+        if current_user.role == 'admin':
+            jobs = Job.query.all()
+        else:
+            jobs = Job.query.filter_by(employer_id=current_user.id).all()
         
         # Get selected job from query parameters
         selected_job_id = request.args.get('job_id', type=int)
@@ -241,6 +251,11 @@ def dashboard():
         
         if selected_job_id:
             selected_job = Job.query.get_or_404(selected_job_id)
+            
+            # Verify employer owns the job (unless admin)
+            if current_user.role != 'admin' and selected_job.employer_id != current_user.id:
+                flash('You do not have permission to view this job.', 'danger')
+                return redirect(url_for('main.dashboard'))
             
             # Rank applications for this specific job
             ranked_candidates = rank_applications_by_job(selected_job_id)
@@ -319,3 +334,269 @@ def dashboard():
         logger.error(f"Error loading dashboard: {str(e)}")
         flash('An error occurred while loading the dashboard. Please try again.', 'danger')
         return redirect(url_for('main.index'))
+
+
+@bp.route('/employer/jobs/create', methods=['GET', 'POST'])
+@login_required
+@role_required('employer', 'admin')
+def create_job():
+    """
+    Create a new job posting.
+    GET: Display job creation form.
+    POST: Process job creation and associate with employer.
+    """
+    current_user = get_current_user()
+    
+    if request.method == 'POST':
+        # Get form data
+        title = request.form.get('title', '').strip()
+        company = request.form.get('company', '').strip()
+        location = request.form.get('location', '').strip()
+        description = request.form.get('description', '').strip()
+        skills = request.form.get('skills', '').strip()
+        
+        # Validate title
+        if not title:
+            flash('Job title is required.', 'danger')
+            return render_template('create_job.html', title='Create Job')
+        
+        if len(title) > 200:
+            flash('Job title is too long.', 'danger')
+            return render_template('create_job.html', title='Create Job')
+        
+        # Validate company
+        if not company:
+            flash('Company name is required.', 'danger')
+            return render_template('create_job.html', title='Create Job')
+        
+        if len(company) > 200:
+            flash('Company name is too long.', 'danger')
+            return render_template('create_job.html', title='Create Job')
+        
+        # Validate location
+        if not location:
+            flash('Location is required.', 'danger')
+            return render_template('create_job.html', title='Create Job')
+        
+        if len(location) > 200:
+            flash('Location is too long.', 'danger')
+            return render_template('create_job.html', title='Create Job')
+        
+        # Validate description
+        if not description:
+            flash('Job description is required.', 'danger')
+            return render_template('create_job.html', title='Create Job')
+        
+        # Validate skills
+        if not skills:
+            flash('Required skills are required.', 'danger')
+            return render_template('create_job.html', title='Create Job')
+        
+        # Create job with employer association
+        job = Job(
+            title=title,
+            company=company,
+            location=location,
+            description=description,
+            skills=skills,
+            employer_id=current_user.id,
+            is_open=True
+        )
+        
+        try:
+            db.session.add(job)
+            db.session.commit()
+            flash('Job created successfully!', 'success')
+            return redirect(url_for('main.dashboard'))
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error creating job: {str(e)}")
+            flash('An error occurred while creating the job. Please try again.', 'danger')
+            return render_template('create_job.html', title='Create Job')
+    
+    return render_template('create_job.html', title='Create Job')
+
+
+@bp.route('/employer/jobs/<int:job_id>/edit', methods=['GET', 'POST'])
+@login_required
+@role_required('employer', 'admin')
+def edit_job(job_id):
+    """
+    Edit an existing job posting.
+    GET: Display job edit form.
+    POST: Process job edit.
+    """
+    current_user = get_current_user()
+    job = Job.query.get_or_404(job_id)
+    
+    # Verify employer owns the job (unless admin)
+    if current_user.role != 'admin' and job.employer_id != current_user.id:
+        flash('You do not have permission to edit this job.', 'danger')
+        return redirect(url_for('main.dashboard'))
+    
+    if request.method == 'POST':
+        # Get form data
+        title = request.form.get('title', '').strip()
+        company = request.form.get('company', '').strip()
+        location = request.form.get('location', '').strip()
+        description = request.form.get('description', '').strip()
+        skills = request.form.get('skills', '').strip()
+        
+        # Validate title
+        if not title:
+            flash('Job title is required.', 'danger')
+            return render_template('edit_job.html', title='Edit Job', job=job)
+        
+        if len(title) > 200:
+            flash('Job title is too long.', 'danger')
+            return render_template('edit_job.html', title='Edit Job', job=job)
+        
+        # Validate company
+        if not company:
+            flash('Company name is required.', 'danger')
+            return render_template('edit_job.html', title='Edit Job', job=job)
+        
+        if len(company) > 200:
+            flash('Company name is too long.', 'danger')
+            return render_template('edit_job.html', title='Edit Job', job=job)
+        
+        # Validate location
+        if not location:
+            flash('Location is required.', 'danger')
+            return render_template('edit_job.html', title='Edit Job', job=job)
+        
+        if len(location) > 200:
+            flash('Location is too long.', 'danger')
+            return render_template('edit_job.html', title='Edit Job', job=job)
+        
+        # Validate description
+        if not description:
+            flash('Job description is required.', 'danger')
+            return render_template('edit_job.html', title='Edit Job', job=job)
+        
+        # Validate skills
+        if not skills:
+            flash('Required skills are required.', 'danger')
+            return render_template('edit_job.html', title='Edit Job', job=job)
+        
+        # Update job fields
+        job.title = title
+        job.company = company
+        job.location = location
+        job.description = description
+        job.skills = skills
+        job.updated_at = datetime.now(timezone.utc)
+        
+        try:
+            db.session.commit()
+            flash('Job updated successfully!', 'success')
+            return redirect(url_for('main.dashboard'))
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error updating job: {str(e)}")
+            flash('An error occurred while updating the job. Please try again.', 'danger')
+            return render_template('edit_job.html', title='Edit Job', job=job)
+    
+    return render_template('edit_job.html', title='Edit Job', job=job)
+
+
+@bp.route('/employer/jobs/<int:job_id>/toggle-status', methods=['POST'])
+@login_required
+@role_required('employer', 'admin')
+def toggle_job_status(job_id):
+    """
+    Toggle job open/closed status.
+    Only the job owner can perform this action.
+    """
+    current_user = get_current_user()
+    job = Job.query.get_or_404(job_id)
+    
+    # Verify employer owns the job (unless admin)
+    if current_user.role != 'admin' and job.employer_id != current_user.id:
+        flash('You do not have permission to modify this job.', 'danger')
+        return redirect(url_for('main.dashboard'))
+    
+    # Toggle status
+    job.is_open = not job.is_open
+    job.updated_at = datetime.now(timezone.utc)
+    
+    try:
+        db.session.commit()
+        status = 'opened' if job.is_open else 'closed'
+        flash(f'Job has been {status} successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error toggling job status: {str(e)}")
+        flash('An error occurred while updating the job status. Please try again.', 'danger')
+    
+    return redirect(url_for('main.dashboard', job_id=job_id))
+
+
+@bp.route('/employer/jobs/<int:job_id>/applicants')
+@login_required
+@role_required('employer', 'admin')
+def employer_job_applicants(job_id):
+    """
+    View applicants for a specific job (employer view).
+    Only the job owner can access this page.
+    """
+    current_user = get_current_user()
+    job = Job.query.get_or_404(job_id)
+    
+    # Verify employer owns the job (unless admin)
+    if current_user.role != 'admin' and job.employer_id != current_user.id:
+        flash('You do not have permission to view applicants for this job.', 'danger')
+        return redirect(url_for('main.dashboard'))
+    
+    # Rank applications for this specific job
+    ranked_candidates = rank_applications_by_job(job_id)
+    
+    # Add screening category to each candidate
+    for candidate in ranked_candidates:
+        if candidate['final_match_score'] is not None:
+            candidate['screening_category'] = get_screening_category(candidate['final_match_score'])
+        else:
+            candidate['screening_category'] = 'Not Scored'
+    
+    return render_template(
+        'employer_applicants.html',
+        title=f'Applicants - {job.title}',
+        job=job,
+        ranked_candidates=ranked_candidates
+    )
+
+
+@bp.route('/employer/applications/<int:application_id>/resume')
+@login_required
+@role_required('employer', 'admin')
+def download_resume(application_id):
+    """
+    Secure resume download for employers.
+    Only the job owner can download resumes for their jobs.
+    """
+    current_user = get_current_user()
+    application = Application.query.get_or_404(application_id)
+    job = application.job
+    
+    # Verify employer owns the job (unless admin)
+    if current_user.role != 'admin' and job.employer_id != current_user.id:
+        flash('You do not have permission to download this resume.', 'danger')
+        return redirect(url_for('main.dashboard'))
+    
+    # Check if resume file exists
+    upload_path = os.path.join(Config.UPLOAD_FOLDER, application.resume_filename)
+    
+    if not os.path.exists(upload_path):
+        flash('Resume file not found.', 'danger')
+        return redirect(url_for('main.employer_job_applicants', job_id=job.id))
+    
+    try:
+        return send_file(
+            upload_path,
+            as_attachment=True,
+            download_name=application.resume_filename
+        )
+    except Exception as e:
+        logger.error(f"Error downloading resume: {str(e)}")
+        flash('An error occurred while downloading the resume. Please try again.', 'danger')
+        return redirect(url_for('main.employer_job_applicants', job_id=job.id))
