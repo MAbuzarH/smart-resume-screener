@@ -43,7 +43,7 @@ class Job(db.Model):
     )
 
     # Relationship with applications
-    applications = db.relationship('Application', backref='job', lazy=True, cascade='all, delete-orphan')
+    applications = db.relationship('Application', backref='job', lazy=True)
     
     # Relationship with employer
     employer = db.relationship('User', backref='jobs')

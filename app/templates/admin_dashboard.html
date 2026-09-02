@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Smart Resume Screener{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Admin Dashboard</li>
+            </ol>
+        </nav>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <h1 class="mb-4">Admin Dashboard</h1>
+
+        <!-- User Statistics -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-primary">{{ total_users }}</h3>
+                        <p class="text-muted mb-0">Total Users</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-success">{{ total_applicants }}</h3>
+                        <p class="text-muted mb-0">Applicants</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-info">{{ total_employers }}</h3>
+                        <p class="text-muted mb-0">Employers</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-warning">{{ total_admins }}</h3>
+                        <p class="text-muted mb-0">Admins</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Job Statistics -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-primary">{{ total_jobs }}</h3>
+                        <p class="text-muted mb-0">Total Jobs</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-success">{{ open_jobs }}</h3>
+                        <p class="text-muted mb-0">Open Jobs</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-secondary">{{ closed_jobs }}</h3>
+                        <p class="text-muted mb-0">Closed Jobs</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Application Statistics -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-primary">{{ total_applications }}</h3>
+                        <p class="text-muted mb-0">Total Applications</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-success">{{ scored_applications }}</h3>
+                        <p class="text-muted mb-0">Scored Applications</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-warning">{{ unscored_applications }}</h3>
+                        <p class="text-muted mb-0">Unscored Applications</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <a href="{{ url_for('admin.users') }}" class="btn btn-primary btn-lg w-100">Manage Users</a>
+            </div>
+            <div class="col-md-6">
+                <a href="{{ url_for('admin.jobs') }}" class="btn btn-info btn-lg w-100">Moderate Jobs</a>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Recent Users</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_users %}
+                            <ul class="list-unstyled mb-0">
+                                {% for user in recent_users %}
+                                <li class="mb-2">
+                                    <strong>{{ user.full_name }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ user.role }} - {{ user.created_at.strftime('%Y-%m-%d') if user.created_at else 'N/A' }}</small>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted mb-0">No recent users.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Recent Jobs</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_jobs %}
+                            <ul class="list-unstyled mb-0">
+                                {% for job in recent_jobs %}
+                                <li class="mb-2">
+                                    <strong>{{ job.title }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ job.company }} - {{ job.created_at.strftime('%Y-%m-%d') if job.created_at else 'N/A' }}</small>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted mb-0">No recent jobs.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Recent Applications</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_applications %}
+                            <ul class="list-unstyled mb-0">
+                                {% for app in recent_applications %}
+                                <li class="mb-2">
+                                    <strong>{{ app.applicant_name }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ app.job.title }} - {{ app.created_at.strftime('%Y-%m-%d') if app.created_at else 'N/A' }}</small>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted mb-0">No recent applications.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

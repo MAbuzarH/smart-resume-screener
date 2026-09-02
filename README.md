@@ -223,6 +223,52 @@ Applicants can manage their job search and applications through the applicant da
 - Extensible for future workflow enhancements
 - Timestamps track application history
 
+## Admin Management
+
+Admins have platform-wide oversight and management capabilities:
+
+### Admin Dashboard
+- View platform statistics (users, jobs, applications)
+- Monitor recent activity (users, jobs, applications)
+- Quick access to user management and job moderation
+- Database-derived real-time statistics
+
+### User Management
+- View all registered users with filtering by role and status
+- Suspend user accounts (prevents login without data deletion)
+- Reactivate suspended user accounts
+- Delete user accounts (only when safe, with data integrity checks)
+- Role-based filtering (Applicant, Employer, Admin)
+- Status-based filtering (Active, Inactive)
+
+### User Suspension/Activation
+- Suspended users cannot log in
+- Existing data (jobs, applications, resumes) preserved during suspension
+- Reactivation restores full access without data loss
+- Admin self-protection (cannot suspend/delete own account)
+- Last admin protection (cannot suspend last active admin)
+
+### Job Moderation
+- View all job postings regardless of employer ownership
+- Remove jobs from public listings (soft deletion via status change)
+- Permanently delete jobs (only when safe, with application checks)
+- Job status indicators (Open/Closed)
+- Application counts per job
+- Employer information display
+
+### Platform Monitoring
+- Real-time user statistics (total, applicants, employers, admins)
+- Job statistics (total, open, closed)
+- Application statistics (total, scored, unscored)
+- Recent activity tracking (users, jobs, applications)
+- Data integrity preservation
+
+### Admin Authorization
+- Admin-only access to all admin routes
+- Server-side role verification
+- Protected against unauthorized access
+- Role-based redirect for unauthorized attempts
+
 ## Authentication
 
 ### Development Admin Account
@@ -231,7 +277,7 @@ After running the seed script, a development admin account is created:
 - **Password:** admin123
 - **Role:** Admin
 
-**Note:** Change this password in production environments.
+**Note:** For testing purposes, additional admin accounts can be created manually through the database or by modifying the seed script. Admin accounts should only be created through controlled mechanisms, not public registration.
 
 ### User Roles
 - **Applicant:** Can browse jobs and submit applications
@@ -339,7 +385,7 @@ The test suite covers:
 - `email`: User's email (unique)
 - `password_hash`: Securely hashed password
 - `role`: User role (applicant, employer, admin)
-- `is_active`: Account status
+- `is_active`: Account status (suspended accounts cannot login)
 - `created_at`: Account creation timestamp
 
 ## Development Notes

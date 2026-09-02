@@ -98,6 +98,33 @@
                         </li>
                     {% endif %}
 
+                    {% if session.get('user_role') == 'admin' %}
+                        <li class="nav-item">
+                            <a
+                                class="nav-link"
+                                href="{{ url_for('admin.dashboard') }}"
+                            >
+                                Admin Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a
+                                class="nav-link"
+                                href="{{ url_for('admin.users') }}"
+                            >
+                                Users
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a
+                                class="nav-link"
+                                href="{{ url_for('admin.jobs') }}"
+                            >
+                                Jobs
+                            </a>
+                        </li>
+                    {% endif %}
+
                     <li class="nav-item">
                         <a
                             class="nav-link"

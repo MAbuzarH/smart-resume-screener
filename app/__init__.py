@@ -28,8 +28,10 @@ def create_app(config_class=Config):
     # Register blueprints
     from app.routes.main import bp as main_bp
     from app.auth.routes import bp as auth_bp
+    from app.admin import bp as admin_bp
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(admin_bp)
 
     # Create database tables
     with app.app_context():

@@ -49,6 +49,8 @@ def role_required(*allowed_roles):
                     return redirect(url_for('main.index'))
                 elif user.role == 'employer':
                     return redirect(url_for('main.dashboard'))
+                elif user.role == 'admin':
+                    return redirect(url_for('admin.dashboard'))
                 else:
                     return redirect(url_for('main.index'))
             
