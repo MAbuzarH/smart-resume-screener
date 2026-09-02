@@ -26,7 +26,8 @@ The prototype includes:
 - Employer job management (create, edit, open/close jobs)
 - Job ownership and authorization
 - Secure resume download
-- Applicant management for employers
+- Applicant management (dashboard, applications, duplicate prevention)
+- Application ownership and status tracking
 
 **Note:** This is the prototype foundation only. Advanced features will be implemented in the final project phase.
 
@@ -164,6 +165,64 @@ Employers can manage their job postings through the employer dashboard:
 - Secure resume download with employer ownership verification
 - Role-based access control enforced server-side
 
+## Applicant Management
+
+Applicants can manage their job search and applications through the applicant dashboard:
+
+### Applicant Dashboard
+- View all open job postings
+- See application statistics (total applications, scored applications)
+- Quick access to available jobs
+- Navigate to "My Applications" page
+
+### Browsing Jobs
+- View all open job listings
+- Filter by job status (only open jobs shown)
+- View job details including:
+  - Job title, company, location
+  - Job description
+  - Required skills
+  - Job status (Open/Closed)
+
+### Applying for Jobs
+- Apply to open jobs only
+- Form pre-populated with authenticated user information (name, email)
+- Upload PDF resume
+- Automatic duplicate application prevention
+- Resume processing and scoring via existing pipeline
+
+### My Applications
+- View all submitted applications
+- See application status (Submitted, etc.)
+- View match scores and screening results
+- Track application history
+- Access application details
+
+### Application Details
+- View comprehensive application information
+- See job details and requirements
+- View match scores (TF-IDF, skill match, final score)
+- See screening category and explanation
+- View matched and missing skills
+- Important notice about score interpretation
+
+### Duplicate Prevention
+- System prevents duplicate applications to the same job
+- Clear message when duplicate submission attempted
+- Protects against accidental multiple submissions
+
+### Closed Job Protection
+- Closed jobs not shown in open job listings
+- Applications to closed jobs rejected
+- Existing applications remain intact when jobs close
+- Historical data preserved
+
+### Application Status
+- Status field tracks application lifecycle
+- Default status: "Submitted"
+- Extensible for future workflow enhancements
+- Timestamps track application history
+
 ## Authentication
 
 ### Development Admin Account
@@ -260,6 +319,7 @@ The test suite covers:
 ### Application Model
 - `id`: Primary key
 - `job_id`: Foreign key to Job
+- `applicant_id`: Foreign key to User (application owner)
 - `applicant_name`: Applicant's full name
 - `applicant_email`: Applicant's email address
 - `resume_filename`: Uploaded resume filename
@@ -269,6 +329,9 @@ The test suite covers:
 - `similarity_score`: TF-IDF/cosine similarity score
 - `skill_match_score`: Skill match percentage
 - `final_match_score`: Weighted final match score
+- `status`: Application status (Submitted, etc.)
+- `created_at`: Application creation timestamp
+- `updated_at`: Last update timestamp
 
 ### User Model
 - `id`: Primary key

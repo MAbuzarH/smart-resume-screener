@@ -1,4 +1,5 @@
 from app import db
+from datetime import datetime, timezone
 
 
 class Application(db.Model):
@@ -13,6 +14,12 @@ class Application(db.Model):
         db.Integer,
         db.ForeignKey('jobs.id'),
         nullable=False
+    )
+
+    applicant_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id'),
+        nullable=True  # Nullable for existing applications, will be populated via migration
     )
 
     applicant_name = db.Column(
@@ -65,6 +72,30 @@ class Application(db.Model):
         db.Float,
         nullable=True
     )
+    
+    # Application status
+    status = db.Column(
+        db.String(50),
+        nullable=False,
+        default='Submitted'
+    )
+    
+    # Timestamps
+    created_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc)
+    )
+    
+    updated_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc)
+    )
+
+    # Relationships
+    applicant = db.relationship('User', backref='applications')
 
     def __repr__(self):
         return f'<Application {self.applicant_name} for Job {self.job_id}>'

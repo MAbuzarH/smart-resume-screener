@@ -34,12 +34,12 @@
                 <form method="POST" enctype="multipart/form-data">
                     <div class="mb-3">
                         <label for="applicant_name" class="form-label">Full Name</label>
-                        <input type="text" class="form-control" id="applicant_name" name="applicant_name" required>
+                        <input type="text" class="form-control" id="applicant_name" name="applicant_name" value="{{ session.get('user_name', '') }}" required>
                     </div>
                     
                     <div class="mb-3">
                         <label for="applicant_email" class="form-label">Email Address</label>
-                        <input type="email" class="form-control" id="applicant_email" name="applicant_email" required>
+                        <input type="email" class="form-control" id="applicant_email" name="applicant_email" value="{{ session.get('user_email', '') }}" required>
                     </div>
                     
                     <div class="mb-3">

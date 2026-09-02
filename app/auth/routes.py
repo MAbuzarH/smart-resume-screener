@@ -124,6 +124,7 @@ def login():
         # Create session
         session['user_id'] = user.id
         session['user_name'] = user.full_name
+        session['user_email'] = user.email
         session['user_role'] = user.role
         
         flash(f'Welcome back, {user.full_name}!', 'success')

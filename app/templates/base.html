@@ -60,6 +60,25 @@
                         </a>
                     </li>
 
+                    {% if session.get('user_role') == 'applicant' %}
+                        <li class="nav-item">
+                            <a
+                                class="nav-link"
+                                href="{{ url_for('main.applicant_dashboard') }}"
+                            >
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a
+                                class="nav-link"
+                                href="{{ url_for('main.applicant_applications') }}"
+                            >
+                                My Applications
+                            </a>
+                        </li>
+                    {% endif %}
+
                     {% if session.get('user_role') == 'employer' %}
                         <li class="nav-item">
                             <a

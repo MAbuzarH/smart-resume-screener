@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Smart Resume Screener{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Applicant Dashboard</li>
+            </ol>
+        </nav>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Applicant Dashboard</h1>
+            <a href="{{ url_for('main.applicant_applications') }}" class="btn btn-primary">My Applications</a>
+        </div>
+
+        <!-- Application Statistics -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-primary">{{ total_applications }}</h3>
+                        <p class="text-muted mb-0">Total Applications</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-success">{{ scored_applications }}</h3>
+                        <p class="text-muted mb-0">Scored Applications</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Available Jobs -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Available Jobs</h5>
+            </div>
+            <div class="card-body">
+                {% if open_jobs %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Job Title</th>
+                                    <th>Company</th>
+                                    <th>Location</th>
+                                    <th>Required Skills</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for job in open_jobs %}
+                                <tr>
+                                    <td>{{ job.title }}</td>
+                                    <td>{{ job.company }}</td>
+                                    <td>{{ job.location }}</td>
+                                    <td>
+                                        {% for skill in job.skills.split(',') %}
+                                            <span class="badge bg-primary me-1">{{ skill.strip() }}</span>
+                                        {% endfor %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('main.job_details', job_id=job.id) }}" class="btn btn-sm btn-info">View Details</a>
+                                        <a href="{{ url_for('main.apply', job_id=job.id) }}" class="btn btn-sm btn-success">Apply</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        No open job positions are currently available.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

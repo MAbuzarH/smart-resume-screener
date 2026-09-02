@@ -33,6 +33,7 @@ def job_details(job_id):
 
 @bp.route('/job/<int:job_id>/apply', methods=['GET', 'POST'])
 @login_required
+@role_required('applicant')
 def apply(job_id):
     """
     Application form for a specific job.
@@ -46,10 +47,21 @@ def apply(job_id):
         flash('This job is currently closed and not accepting new applications.', 'warning')
         return redirect(url_for('main.job_details', job_id=job_id))
     
+    # Check for duplicate application
+    current_user = get_current_user()
+    existing_application = Application.query.filter_by(
+        job_id=job_id,
+        applicant_id=current_user.id
+    ).first()
+    
+    if existing_application:
+        flash('You have already applied for this position.', 'info')
+        return redirect(url_for('main.job_details', job_id=job_id))
+    
     if request.method == 'POST':
-        # Get form data
-        applicant_name = request.form.get('applicant_name', '').strip()
-        applicant_email = request.form.get('applicant_email', '').strip()
+        # Get form data - use authenticated user info where possible
+        applicant_name = request.form.get('applicant_name', current_user.full_name).strip()
+        applicant_email = request.form.get('applicant_email', current_user.email).strip()
         resume_file = request.files.get('resume')
         
         # Validate applicant name
@@ -84,7 +96,7 @@ def apply(job_id):
         original_name, file_extension = os.path.splitext(original_filename)
 
         # Current date and time
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d_%H-%M-%S")
 
         # Final filename
         unique_filename = f"{original_name}_{timestamp}{file_extension}"
@@ -124,6 +136,7 @@ def apply(job_id):
         # Create application record with all scoring information
         application = Application(
             job_id=job_id,
+            applicant_id=current_user.id,
             applicant_name=applicant_name,
             applicant_email=applicant_email,
             resume_filename=unique_filename,
@@ -132,7 +145,8 @@ def apply(job_id):
             match_score=match_score,  # Original TF-IDF score (preserved for backward compatibility)
             similarity_score=match_score,  # TF-IDF score (renamed for clarity)
             skill_match_score=skill_match_score,  # Skill match percentage
-            final_match_score=final_match_score  # Weighted final score
+            final_match_score=final_match_score,  # Weighted final score
+            status='Submitted'
         )
         
         try:
@@ -198,13 +212,28 @@ def job_applications(job_id):
 
 
 @bp.route('/application/<int:application_id>')
+@login_required
 def application_details(application_id):
     """
     Candidate screening analysis page - displays detailed analysis for a specific application.
     """
     try:
+        current_user = get_current_user()
         application = Application.query.get_or_404(application_id)
         job = application.job
+        
+        # Verify access permissions
+        # Employers can view applications for their jobs
+        # Applicants can view their own applications
+        # Admins can view all applications
+        if current_user.role == 'applicant':
+            if application.applicant_id != current_user.id:
+                flash('You do not have permission to view this application.', 'danger')
+                return redirect(url_for('main.applicant_applications'))
+        elif current_user.role == 'employer':
+            if job.employer_id != current_user.id:
+                flash('You do not have permission to view this application.', 'danger')
+                return redirect(url_for('main.dashboard'))
         
         # Generate candidate screening analysis
         screening_result = analyze_candidate(application, job)
@@ -600,3 +629,96 @@ def download_resume(application_id):
         logger.error(f"Error downloading resume: {str(e)}")
         flash('An error occurred while downloading the resume. Please try again.', 'danger')
         return redirect(url_for('main.employer_job_applicants', job_id=job.id))
+
+
+@bp.route('/applicant/dashboard')
+@login_required
+@role_required('applicant')
+def applicant_dashboard():
+    """
+    Applicant dashboard - shows available jobs and application summary.
+    """
+    try:
+        current_user = get_current_user()
+        
+        # Get all open jobs
+        open_jobs = Job.query.filter_by(is_open=True).all()
+        
+        # Get applicant's applications
+        applicant_applications = Application.query.filter_by(applicant_id=current_user.id).all()
+        
+        # Calculate application statistics
+        total_applications = len(applicant_applications)
+        scored_applications = sum(1 for app in applicant_applications if app.final_match_score is not None)
+        
+        return render_template(
+            'applicant_dashboard.html',
+            title='Applicant Dashboard',
+            open_jobs=open_jobs,
+            applicant_applications=applicant_applications,
+            total_applications=total_applications,
+            scored_applications=scored_applications
+        )
+    except Exception as e:
+        logger.error(f"Error loading applicant dashboard: {str(e)}")
+        flash('An error occurred while loading the dashboard. Please try again.', 'danger')
+        return redirect(url_for('main.index'))
+
+
+@bp.route('/applicant/applications')
+@login_required
+@role_required('applicant')
+def applicant_applications():
+    """
+    My Applications page - shows applicant's submitted applications.
+    """
+    try:
+        current_user = get_current_user()
+        
+        # Get applicant's applications with job information
+        applications = Application.query.filter_by(applicant_id=current_user.id).order_by(Application.created_at.desc()).all()
+        
+        return render_template(
+            'applicant_applications.html',
+            title='My Applications',
+            applications=applications
+        )
+    except Exception as e:
+        logger.error(f"Error loading applicant applications: {str(e)}")
+        flash('An error occurred while loading your applications. Please try again.', 'danger')
+        return redirect(url_for('main.applicant_dashboard'))
+
+
+@bp.route('/applicant/applications/<int:application_id>')
+@login_required
+@role_required('applicant')
+def applicant_application_details(application_id):
+    """
+    Applicant-facing application detail page.
+    Shows applicant's own application information.
+    """
+    try:
+        current_user = get_current_user()
+        application = Application.query.get_or_404(application_id)
+        
+        # Verify ownership
+        if application.applicant_id != current_user.id:
+            flash('You do not have permission to view this application.', 'danger')
+            return redirect(url_for('main.applicant_applications'))
+        
+        job = application.job
+        
+        # Generate screening result for display
+        screening_result = analyze_candidate(application, job)
+        
+        return render_template(
+            'applicant_application_details.html',
+            title=f'Application - {job.title}',
+            application=application,
+            job=job,
+            screening=screening_result
+        )
+    except Exception as e:
+        logger.error(f"Error loading applicant application details for application {application_id}: {str(e)}")
+        flash('An error occurred while loading the application details. Please try again.', 'danger')
+        return redirect(url_for('main.applicant_applications'))

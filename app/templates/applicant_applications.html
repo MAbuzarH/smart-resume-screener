@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Smart Resume Screener{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('main.applicant_dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">My Applications</li>
+            </ol>
+        </nav>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>My Applications</h1>
+            <a href="{{ url_for('main.applicant_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Your Submitted Applications</h5>
+            </div>
+            <div class="card-body">
+                {% if applications %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Job Title</th>
+                                    <th>Company</th>
+                                    <th>Location</th>
+                                    <th>Application Date</th>
+                                    <th>Status</th>
+                                    <th>Match Score</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for application in applications %}
+                                <tr>
+                                    <td>{{ application.job.title }}</td>
+                                    <td>{{ application.job.company }}</td>
+                                    <td>{{ application.job.location }}</td>
+                                    <td>{{ application.created_at.strftime('%Y-%m-%d') if application.created_at else 'N/A' }}</td>
+                                    <td>
+                                        <span class="badge bg-info">{{ application.status }}</span>
+                                    {% if not application.job.is_open %}
+                                        <span class="badge bg-secondary">Job Closed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if application.final_match_score is not none %}
+                                            {{ "%.1f"|format(application.final_match_score) }}%
+                                        {% else %}
+                                            Not Scored
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('main.applicant_application_details', application_id=application.id) }}" class="btn btn-sm btn-primary">View Details</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        You haven't submitted any applications yet. <a href="{{ url_for('main.applicant_dashboard') }}">Browse available jobs</a>.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
