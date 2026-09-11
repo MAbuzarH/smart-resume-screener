@@ -5,28 +5,82 @@
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <h1 class="mb-4">Available Jobs</h1>
-        
+        <!-- Hero Section -->
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold text-gradient mb-3">Smart Resume Screener</h1>
+            <p class="lead text-muted mb-4">AI-Powered Job Matching & Candidate Screening Platform</p>
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <p class="text-muted">Find your perfect job match with our intelligent resume screening system. Upload your resume and let our AI-powered matching engine connect you with the right opportunities.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Jobs Section -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold">Available Jobs</h2>
+            {% if session.get('user_id') and session.get('user_role') == 'applicant' %}
+                <a href="{{ url_for('main.applicant_applications') }}" class="btn btn-primary">
+                    <i class="bi bi-file-earmark-text"></i> My Applications
+                </a>
+            {% endif %}
+        </div>
+
         {% if jobs %}
             <div class="row">
                 {% for job in jobs %}
-                    <div class="col-md-6 mb-4">
-                        <div class="card">
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card job-card h-100">
                             <div class="card-body">
-                                <h5 class="card-title">{{ job.title }}</h5>
-                                <h6 class="card-subtitle mb-2 text-muted">{{ job.company }}</h6>
-                                <p class="card-text">
-                                    <strong>Location:</strong> {{ job.location }}
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h5 class="card-title mb-1">{{ job.title }}</h5>
+                                    {% if job.is_open %}
+                                        <span class="badge bg-success">Open</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Closed</span>
+                                    {% endif %}
+                                </div>
+                                <h6 class="card-subtitle mb-2 text-muted">
+                                    <i class="bi bi-building"></i> {{ job.company }}
+                                </h6>
+                                <p class="job-location mb-3">
+                                    <i class="bi bi-geo-alt"></i> {{ job.location }}
                                 </p>
-                                <a href="{{ url_for('main.job_details', job_id=job.id) }}" class="btn btn-primary">View Details</a>
+                                <div class="job-skills mb-3">
+                                    {% for skill in job.skills.split(',')[:4] %}
+                                        <span class="skill-tag">{{ skill.strip() }}</span>
+                                    {% endfor %}
+                                    {% if job.skills.split(',')|length > 4 %}
+                                        <span class="skill-tag bg-secondary">+{{ job.skills.split(',')|length - 4 }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <a href="{{ url_for('main.job_details', job_id=job.id) }}" class="btn btn-primary">
+                                        <i class="bi bi-eye"></i> View Details
+                                    </a>
+                                    {% if job.is_open and session.get('user_id') and session.get('user_role') == 'applicant' %}
+                                        <a href="{{ url_for('main.apply', job_id=job.id) }}" class="btn btn-success">
+                                            <i class="bi bi-send"></i> Apply Now
+                                        </a>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </div>
                 {% endfor %}
             </div>
         {% else %}
-            <div class="alert alert-info">
-                No jobs are currently available.
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="bi bi-inbox"></i>
+                </div>
+                <h3 class="empty-state-text">No Jobs Available</h3>
+                <p class="text-muted">There are currently no open job positions available. Please check back later.</p>
+                {% if session.get('user_id') and session.get('user_role') == 'employer' %}
+                    <a href="{{ url_for('main.create_job') }}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Create a Job
+                    </a>
+                {% endif %}
             </div>
         {% endif %}
     </div>

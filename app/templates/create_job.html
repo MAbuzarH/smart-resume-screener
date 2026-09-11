@@ -19,6 +19,7 @@
             {% if messages %}
                 {% for category, message in messages %}
                     <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        <i class="bi bi-{% if category == 'success' %}check-circle{% elif category == 'danger' %}exclamation-circle{% elif category == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
                         {{ message }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
@@ -27,39 +28,57 @@
         {% endwith %}
 
         <div class="card">
-            <div class="card-header bg-success text-white">
-                <h5 class="mb-0">Create New Job Posting</h5>
+            <div class="card-header bg-gradient-success text-white">
+                <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Create New Job Posting</h5>
             </div>
             <div class="card-body">
                 <form method="POST">
                     <div class="mb-3">
-                        <label for="title" class="form-label">Job Title</label>
-                        <input type="text" class="form-control" id="title" name="title" required>
+                        <label for="title" class="form-label"><i class="bi bi-briefcase"></i> Job Title</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-briefcase"></i></span>
+                            <input type="text" class="form-control" id="title" name="title" placeholder="e.g., Senior Software Engineer" required>
+                        </div>
                     </div>
-                    
+
                     <div class="mb-3">
-                        <label for="company" class="form-label">Company</label>
-                        <input type="text" class="form-control" id="company" name="company" required>
+                        <label for="company" class="form-label"><i class="bi bi-building"></i> Company</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-building"></i></span>
+                            <input type="text" class="form-control" id="company" name="company" placeholder="e.g., Tech Corporation" required>
+                        </div>
                     </div>
-                    
+
                     <div class="mb-3">
-                        <label for="location" class="form-label">Location</label>
-                        <input type="text" class="form-control" id="location" name="location" required>
+                        <label for="location" class="form-label"><i class="bi bi-geo-alt"></i> Location</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                            <input type="text" class="form-control" id="location" name="location" placeholder="e.g., New York, NY (Remote)" required>
+                        </div>
                     </div>
-                    
+
                     <div class="mb-3">
-                        <label for="description" class="form-label">Job Description</label>
-                        <textarea class="form-control" id="description" name="description" rows="5" required></textarea>
+                        <label for="description" class="form-label"><i class="bi bi-file-text"></i> Job Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="5" placeholder="Describe the role, responsibilities, and requirements..." required></textarea>
                     </div>
-                    
+
                     <div class="mb-3">
-                        <label for="skills" class="form-label">Required Skills (comma-separated)</label>
-                        <input type="text" class="form-control" id="skills" name="skills" required>
-                        <small class="text-muted">Example: Python, Flask, SQL, Git, REST API</small>
+                        <label for="skills" class="form-label"><i class="bi bi-tools"></i> Required Skills (comma-separated)</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-tools"></i></span>
+                            <input type="text" class="form-control" id="skills" name="skills" placeholder="e.g., Python, Flask, SQL, Git, REST API" required>
+                        </div>
+                        <div class="form-text mt-2"><i class="bi bi-info-circle"></i> Example: Python, Flask, SQL, Git, REST API</div>
                     </div>
-                    
-                    <button type="submit" class="btn btn-success">Create Job</button>
-                    <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary">Cancel</a>
+
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-plus-circle"></i> Create Job
+                        </button>
+                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
                 </form>
             </div>
         </div>

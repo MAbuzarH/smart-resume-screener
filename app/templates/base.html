@@ -6,182 +6,147 @@
     <title>{% block title %}Smart Resume Screener & Job Board{% endblock %}</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <!-- Navigation Bar -->
-    <!-- <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-gradient-dark sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('main.index') }}">Smart Resume Screener & Job Board</a>
-        </div>
-        <div>
-            <li class="nav-item">
-    <a class="nav-link" href="{{ url_for('main.index') }}">
-        Home
-    </a>
-</li>
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">
+                <i class="bi bi-briefcase"></i> Smart Resume Screener
+            </a>
 
-<li class="nav-item">
-    <a class="nav-link" href="{{ url_for('main.applications') }}">
-        Applications
-    </a>
-</li>
-        </div>
-    </nav> -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container">
+            <button
+                class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarNav"
+                aria-controls="navbarNav"
+                aria-expanded="false"
+                aria-label="Toggle navigation"
+            >
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-        <a class="navbar-brand" href="{{ url_for('main.index') }}">
-            Smart Resume Screener
-        </a>
-
-        <button
-            class="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarNav"
-            aria-controls="navbarNav"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-        >
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="navbarNav">
-
-            <ul class="navbar-nav ms-auto">
-
-                {% if session.get('user_id') %}
-                    <li class="nav-item">
-                        <a
-                            class="nav-link"
-                            href="{{ url_for('main.index') }}"
-                        >
-                            Home
-                        </a>
-                    </li>
-
-                    {% if session.get('user_role') == 'applicant' %}
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {% if session.get('user_id') %}
                         <li class="nav-item">
-                            <a
-                                class="nav-link"
-                                href="{{ url_for('main.applicant_dashboard') }}"
-                            >
-                                Dashboard
+                            <a class="nav-link" href="{{ url_for('main.index') }}">
+                                <i class="bi bi-house"></i> Home
+                            </a>
+                        </li>
+
+                        {% if session.get('user_role') == 'applicant' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('main.applicant_dashboard') }}">
+                                    <i class="bi bi-speedometer2"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('main.applicant_applications') }}">
+                                    <i class="bi bi-file-earmark-text"></i> My Applications
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% if session.get('user_role') == 'employer' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('main.create_job') }}">
+                                    <i class="bi bi-plus-circle"></i> Create Job
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('main.dashboard') }}">
+                                    <i class="bi bi-briefcase"></i> Dashboard
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% if session.get('user_role') == 'admin' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
+                                    <i class="bi bi-shield-lock"></i> Admin Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('admin.users') }}">
+                                    <i class="bi bi-people"></i> Users
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('admin.jobs') }}">
+                                    <i class="bi bi-journal-text"></i> Jobs
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                                <i class="bi bi-box-arrow-right"></i> Logout ({{ session.get('user_name') }})
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('main.index') }}">
+                                <i class="bi bi-house"></i> Home
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a
-                                class="nav-link"
-                                href="{{ url_for('main.applicant_applications') }}"
-                            >
-                                My Applications
-                            </a>
-                        </li>
-                    {% endif %}
-
-                    {% if session.get('user_role') == 'employer' %}
-                        <li class="nav-item">
-                            <a
-                                class="nav-link"
-                                href="{{ url_for('main.create_job') }}"
-                            >
-                                Create Job
+                            <a class="nav-link" href="{{ url_for('auth.login') }}">
+                                <i class="bi bi-box-arrow-in-right"></i> Login
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a
-                                class="nav-link"
-                                href="{{ url_for('main.dashboard') }}"
-                            >
-                                Dashboard
-                            </a>
-                        </li>
-                    {% endif %}
-
-                    {% if session.get('user_role') == 'admin' %}
-                        <li class="nav-item">
-                            <a
-                                class="nav-link"
-                                href="{{ url_for('admin.dashboard') }}"
-                            >
-                                Admin Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a
-                                class="nav-link"
-                                href="{{ url_for('admin.users') }}"
-                            >
-                                Users
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a
-                                class="nav-link"
-                                href="{{ url_for('admin.jobs') }}"
-                            >
-                                Jobs
+                            <a class="nav-link" href="{{ url_for('auth.register') }}">
+                                <i class="bi bi-person-plus"></i> Register
                             </a>
                         </li>
                     {% endif %}
-
-                    <li class="nav-item">
-                        <a
-                            class="nav-link"
-                            href="{{ url_for('auth.logout') }}"
-                        >
-                            Logout ({{ session.get('user_name') }})
-                        </a>
-                    </li>
-                {% else %}
-                    <li class="nav-item">
-                        <a
-                            class="nav-link"
-                            href="{{ url_for('main.index') }}"
-                        >
-                            Home
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a
-                            class="nav-link"
-                            href="{{ url_for('auth.login') }}"
-                        >
-                            Login
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a
-                            class="nav-link"
-                            href="{{ url_for('auth.register') }}"
-                        >
-                            Register
-                        </a>
-                    </li>
-                {% endif %}
-
-            </ul>
-
+                </ul>
+            </div>
         </div>
+    </nav>
 
-    </div>
-</nav>
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        <i class="bi bi-{% if category == 'success' %}check-circle{% elif category == 'danger' %}exclamation-circle{% elif category == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
 
     <!-- Main Content -->
-    <div class="container mt-4">
+    <div class="container mt-4 mb-5">
         {% block content %}{% endblock %}
     </div>
 
     <!-- Footer -->
-    <footer class="mt-5 py-3 bg-light text-center">
-        <div class="container">
-            <p class="text-muted mb-0">&copy; 2026 Smart Resume Screener - Prototype Phase</p>
+    <footer class="bg-dark text-white mt-5">
+        <div class="container py-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="fw-bold"><i class="bi bi-briefcase"></i> Smart Resume Screener</h5>
+                    <p class="text-muted mb-0">AI-powered resume screening and job matching platform</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="text-muted mb-0">&copy; 2026 Smart Resume Screener - Prototype Phase</p>
+                </div>
+            </div>
         </div>
     </footer>
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 </body>
 </html>

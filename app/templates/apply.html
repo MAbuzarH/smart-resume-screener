@@ -18,6 +18,7 @@
             {% if messages %}
                 {% for category, message in messages %}
                     <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        <i class="bi bi-{% if category == 'success' %}check-circle{% elif category == 'danger' %}exclamation-circle{% elif category == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
                         {{ message }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
@@ -26,30 +27,54 @@
         {% endwith %}
 
         <div class="card">
+            <div class="card-header bg-gradient-success text-white">
+                <h4 class="mb-0"><i class="bi bi-send"></i> Apply for {{ job.title }}</h4>
+            </div>
             <div class="card-body">
-                <h1 class="card-title mb-4">Apply for {{ job.title }}</h1>
-                <h5 class="card-subtitle mb-4 text-muted">{{ job.company }}</h5>
-                <p class="text-muted mb-4">Location: {{ job.location }}</p>
-                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5 class="fw-bold mb-1">{{ job.company }}</h5>
+                        <p class="text-muted mb-0"><i class="bi bi-geo-alt"></i> {{ job.location }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="text-muted mb-0"><i class="bi bi-person"></i> Employer: {{ job.employer.full_name if job.employer else 'N/A' }}</p>
+                    </div>
+                </div>
+
                 <form method="POST" enctype="multipart/form-data">
                     <div class="mb-3">
-                        <label for="applicant_name" class="form-label">Full Name</label>
-                        <input type="text" class="form-control" id="applicant_name" name="applicant_name" value="{{ session.get('user_name', '') }}" required>
+                        <label for="applicant_name" class="form-label"><i class="bi bi-person"></i> Full Name</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                            <input type="text" class="form-control" id="applicant_name" name="applicant_name" value="{{ session.get('user_name', '') }}" required>
+                        </div>
                     </div>
-                    
+
                     <div class="mb-3">
-                        <label for="applicant_email" class="form-label">Email Address</label>
-                        <input type="email" class="form-control" id="applicant_email" name="applicant_email" value="{{ session.get('user_email', '') }}" required>
+                        <label for="applicant_email" class="form-label"><i class="bi bi-envelope"></i> Email Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                            <input type="email" class="form-control" id="applicant_email" name="applicant_email" value="{{ session.get('user_email', '') }}" required>
+                        </div>
                     </div>
-                    
+
                     <div class="mb-3">
-                        <label for="resume" class="form-label">Resume (PDF)</label>
-                        <input type="file" class="form-control" id="resume" name="resume" accept=".pdf" required>
-                        <div class="form-text">Please upload your resume in PDF format.</div>
+                        <label for="resume" class="form-label"><i class="bi bi-file-earmark-pdf"></i> Resume (PDF)</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-upload"></i></span>
+                            <input type="file" class="form-control" id="resume" name="resume" accept=".pdf" required>
+                        </div>
+                        <div class="form-text mt-2"><i class="bi bi-info-circle"></i> Please upload your resume in PDF format. Maximum file size: 5MB.</div>
                     </div>
-                    
-                    <button type="submit" class="btn btn-primary">Submit Application</button>
-                    <a href="{{ url_for('main.job_details', job_id=job.id) }}" class="btn btn-secondary">Cancel</a>
+
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-send"></i> Submit Application
+                        </button>
+                        <a href="{{ url_for('main.job_details', job_id=job.id) }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
                 </form>
             </div>
         </div>

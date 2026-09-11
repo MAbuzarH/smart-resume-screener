@@ -26,25 +26,27 @@
         {% endwith %}
 
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>Applicant Dashboard</h1>
-            <a href="{{ url_for('main.applicant_applications') }}" class="btn btn-primary">My Applications</a>
+            <h1 class="fw-bold"><i class="bi bi-speedometer2"></i> Applicant Dashboard</h1>
+            <a href="{{ url_for('main.applicant_applications') }}" class="btn btn-primary">
+                <i class="bi bi-file-earmark-text"></i> My Applications
+            </a>
         </div>
 
         <!-- Application Statistics -->
         <div class="row mb-4">
             <div class="col-md-6">
-                <div class="card text-center">
+                <div class="stat-card bg-gradient-primary text-white">
                     <div class="card-body">
-                        <h3 class="text-primary">{{ total_applications }}</h3>
-                        <p class="text-muted mb-0">Total Applications</p>
+                        <h3>{{ total_applications }}</h3>
+                        <p><i class="bi bi-file-earmark-text"></i> Total Applications</p>
                     </div>
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="card text-center">
+                <div class="stat-card bg-gradient-success text-white">
                     <div class="card-body">
-                        <h3 class="text-success">{{ scored_applications }}</h3>
-                        <p class="text-muted mb-0">Scored Applications</p>
+                        <h3>{{ scored_applications }}</h3>
+                        <p><i class="bi bi-graph-up"></i> Scored Applications</p>
                     </div>
                 </div>
             </div>
@@ -52,45 +54,54 @@
 
         <!-- Available Jobs -->
         <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Available Jobs</h5>
+            <div class="card-header bg-gradient-info text-white">
+                <h5 class="mb-0"><i class="bi bi-briefcase"></i> Available Jobs</h5>
             </div>
             <div class="card-body">
                 {% if open_jobs %}
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Job Title</th>
-                                    <th>Company</th>
-                                    <th>Location</th>
-                                    <th>Required Skills</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for job in open_jobs %}
-                                <tr>
-                                    <td>{{ job.title }}</td>
-                                    <td>{{ job.company }}</td>
-                                    <td>{{ job.location }}</td>
-                                    <td>
-                                        {% for skill in job.skills.split(',') %}
-                                            <span class="badge bg-primary me-1">{{ skill.strip() }}</span>
-                                        {% endfor %}
-                                    </td>
-                                    <td>
-                                        <a href="{{ url_for('main.job_details', job_id=job.id) }}" class="btn btn-sm btn-info">View Details</a>
-                                        <a href="{{ url_for('main.apply', job_id=job.id) }}" class="btn btn-sm btn-success">Apply</a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                    <div class="row">
+                        {% for job in open_jobs %}
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card job-card h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                            <h5 class="card-title mb-1">{{ job.title }}</h5>
+                                            <span class="badge bg-success">Open</span>
+                                        </div>
+                                        <h6 class="card-subtitle mb-2 text-muted">
+                                            <i class="bi bi-building"></i> {{ job.company }}
+                                        </h6>
+                                        <p class="job-location mb-3">
+                                            <i class="bi bi-geo-alt"></i> {{ job.location }}
+                                        </p>
+                                        <div class="job-skills mb-3">
+                                            {% for skill in job.skills.split(',')[:4] %}
+                                                <span class="skill-tag">{{ skill.strip() }}</span>
+                                            {% endfor %}
+                                            {% if job.skills.split(',')|length > 4 %}
+                                                <span class="skill-tag bg-secondary">+{{ job.skills.split(',')|length - 4 }}</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="d-grid gap-2">
+                                            <a href="{{ url_for('main.job_details', job_id=job.id) }}" class="btn btn-primary">
+                                                <i class="bi bi-eye"></i> View Details
+                                            </a>
+                                            <a href="{{ url_for('main.apply', job_id=job.id) }}" class="btn btn-success">
+                                                <i class="bi bi-send"></i> Apply
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
                     </div>
                 {% else %}
-                    <div class="alert alert-info">
-                        No open job positions are currently available.
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="bi bi-inbox"></i>
+                        </div>
+                        <h3 class="empty-state-text">No Open Jobs Available</h3>
+                        <p class="text-muted">There are currently no open job positions available. Please check back later.</p>
                     </div>
                 {% endif %}
             </div>

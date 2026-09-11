@@ -8,23 +8,27 @@
     <div class="col-12">
 
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>Employer Dashboard</h1>
+            <h1 class="fw-bold"><i class="bi bi-briefcase"></i> Employer Dashboard</h1>
             <div>
-                <a href="{{ url_for('main.create_job') }}" class="btn btn-success">Create New Job</a>
-                <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Back to Jobs</a>
+                <a href="{{ url_for('main.create_job') }}" class="btn btn-success">
+                    <i class="bi bi-plus-circle"></i> Create New Job
+                </a>
+                <a href="{{ url_for('main.index') }}" class="btn btn-secondary">
+                    <i class="bi bi-house"></i> Back to Jobs
+                </a>
             </div>
         </div>
 
         <!-- My Jobs -->
         <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">My Jobs</h5>
+            <div class="card-header bg-gradient-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-briefcase"></i> My Jobs</h5>
             </div>
             <div class="card-body">
                 {% if jobs %}
                     <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
+                        <table class="table table-striped table-hover align-middle">
+                            <thead class="table-light">
                                 <tr>
                                     <th>Job Title</th>
                                     <th>Company</th>
@@ -37,7 +41,9 @@
                             <tbody>
                                 {% for job in jobs %}
                                 <tr>
-                                    <td>{{ job.title }}</td>
+                                    <td>
+                                        <strong>{{ job.title }}</strong>
+                                    </td>
                                     <td>{{ job.company }}</td>
                                     <td>{{ job.location }}</td>
                                     <td>
@@ -47,16 +53,27 @@
                                             <span class="badge bg-secondary">Closed</span>
                                         {% endif %}
                                     </td>
-                                    <td>{{ job.applications|length }}</td>
                                     <td>
-                                        <a href="{{ url_for('main.dashboard', job_id=job.id) }}" class="btn btn-sm btn-info">View Candidates</a>
-                                        <a href="{{ url_for('main.edit_job', job_id=job.id) }}" class="btn btn-sm btn-warning">Edit</a>
-                                        <form action="{{ url_for('main.toggle_job_status', job_id=job.id) }}" method="POST" style="display: inline;">
-                                            <button type="submit" class="btn btn-sm {% if job.is_open %}btn-danger{% else %}btn-success{% endif %}">
-                                                {% if job.is_open %}Close{% else %}Open{% endif %}
-                                            </button>
-                                        </form>
-                                        <a href="{{ url_for('main.employer_job_applicants', job_id=job.id) }}" class="btn btn-sm btn-primary">Applicants</a>
+                                        <span class="badge bg-info">{{ job.applications|length }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('main.dashboard', job_id=job.id) }}" class="btn btn-sm btn-info">
+                                                <i class="bi bi-people"></i> Candidates
+                                            </a>
+                                            <a href="{{ url_for('main.edit_job', job_id=job.id) }}" class="btn btn-sm btn-warning">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </a>
+                                            <form action="{{ url_for('main.toggle_job_status', job_id=job.id) }}" method="POST" style="display: inline;">
+                                                <button type="submit" class="btn btn-sm {% if job.is_open %}btn-danger{% else %}btn-success{% endif %}">
+                                                    <i class="bi bi-{% if job.is_open %}toggle-off{% else %}toggle-on{% endif %}"></i>
+                                                    {% if job.is_open %}Close{% else %}Open{% endif %}
+                                                </button>
+                                            </form>
+                                            <a href="{{ url_for('main.employer_job_applicants', job_id=job.id) }}" class="btn btn-sm btn-primary">
+                                                <i class="bi bi-list-ul"></i> Applicants
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -64,8 +81,12 @@
                         </table>
                     </div>
                 {% else %}
-                    <div class="alert alert-info">
-                        You haven't created any jobs yet. <a href="{{ url_for('main.create_job') }}">Create your first job</a>.
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="bi bi-briefcase"></i>
+                        </div>
+                        <h3 class="empty-state-text">No Jobs Created Yet</h3>
+                        <p class="text-muted">You haven't created any job postings. <a href="{{ url_for('main.create_job') }}" class="text-primary">Create your first job</a>.</p>
                     </div>
                 {% endif %}
             </div>
@@ -73,8 +94,8 @@
 
         <!-- Job Selection -->
         <div class="card mb-4">
-            <div class="card-header bg-info text-white">
-                <h5 class="mb-0">View Candidate Rankings</h5>
+            <div class="card-header bg-gradient-info text-white">
+                <h5 class="mb-0"><i class="bi bi-search"></i> View Candidate Rankings</h5>
             </div>
             <div class="card-body">
                 <form action="{{ url_for('main.dashboard') }}" method="GET" class="row align-items-end">
@@ -100,7 +121,9 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <button type="submit" class="btn btn-primary w-100">View Candidates</button>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search"></i> View Candidates
+                        </button>
                     </div>
                 </form>
             </div>
@@ -110,16 +133,16 @@
 
             <!-- Job Summary -->
             <div class="card mb-4">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">Job Summary</h5>
+                <div class="card-header bg-gradient-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Job Summary</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
-                            <h4>{{ selected_job.title }}</h4>
+                            <h4 class="fw-bold">{{ selected_job.title }}</h4>
                             <p class="text-muted mb-2">{{ selected_job.company }}</p>
-                            <p><strong>Location:</strong> {{ selected_job.location }}</p>
-                            <p><strong>Status:</strong>
+                            <p><strong><i class="bi bi-geo-alt"></i> Location:</strong> {{ selected_job.location }}</p>
+                            <p><strong><i class="bi bi-toggle-on"></i> Status:</strong>
                                 {% if selected_job.is_open %}
                                     <span class="badge bg-success">Open</span>
                                 {% else %}
@@ -128,10 +151,10 @@
                             </p>
                         </div>
                         <div class="col-md-6">
-                            <p><strong>Required Skills:</strong></p>
+                            <p><strong><i class="bi bi-tools"></i> Required Skills:</strong></p>
                             <div class="mt-2">
                                 {% for skill in selected_job.skills.split(',') %}
-                                    <span class="badge bg-primary me-1">{{ skill.strip() }}</span>
+                                    <span class="skill-tag">{{ skill.strip() }}</span>
                                 {% endfor %}
                             </div>
                         </div>
@@ -143,34 +166,34 @@
             {% if summary_stats %}
             <div class="row mb-4">
                 <div class="col-md-3">
-                    <div class="card text-center">
+                    <div class="stat-card bg-gradient-primary text-white">
                         <div class="card-body">
-                            <h3 class="text-primary">{{ summary_stats.total_applications }}</h3>
-                            <p class="text-muted mb-0">Total Applications</p>
+                            <h3>{{ summary_stats.total_applications }}</h3>
+                            <p><i class="bi bi-file-earmark-text"></i> Total Applications</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card text-center">
+                    <div class="stat-card bg-gradient-success text-white">
                         <div class="card-body">
-                            <h3 class="text-success">{{ summary_stats.scored_applications }}</h3>
-                            <p class="text-muted mb-0">Scored Applications</p>
+                            <h3>{{ summary_stats.scored_applications }}</h3>
+                            <p><i class="bi bi-graph-up"></i> Scored Applications</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card text-center">
+                    <div class="stat-card bg-gradient-success text-white">
                         <div class="card-body">
-                            <h3 class="text-success">{{ summary_stats.strong_matches }}</h3>
-                            <p class="text-muted mb-0">Strong Matches</p>
+                            <h3>{{ summary_stats.strong_matches }}</h3>
+                            <p><i class="bi bi-trophy"></i> Strong Matches</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card text-center">
+                    <div class="stat-card bg-gradient-info text-white">
                         <div class="card-body">
-                            <h3 class="text-warning">{{ summary_stats.moderate_matches }}</h3>
-                            <p class="text-muted mb-0">Moderate Matches</p>
+                            <h3>{{ summary_stats.moderate_matches }}</h3>
+                            <p><i class="bi bi-check-circle"></i> Moderate Matches</p>
                         </div>
                     </div>
                 </div>
@@ -180,20 +203,20 @@
             <!-- Top Candidates -->
             {% if top_candidates %}
             <div class="card mb-4">
-                <div class="card-header bg-warning text-dark">
-                    <h5 class="mb-0">Top Candidates</h5>
+                <div class="card-header bg-gradient-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-trophy-fill"></i> Top Candidates</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         {% for candidate in top_candidates %}
                         <div class="col-md-4">
-                            <div class="card mb-3">
+                            <div class="card stat-card mb-3">
                                 <div class="card-body text-center">
-                                    <h5>#{{ loop.index }}</h5>
-                                    <p class="mb-0">{{ candidate.application.applicant_name }}</p>
-                                    <h4 class="text-primary">
+                                    <h5 class="text-primary">#{{ loop.index }}</h5>
+                                    <p class="mb-1 fw-bold">{{ candidate.application.applicant_name }}</p>
+                                    <h4 class="text-gradient">
                                         {% if candidate.final_match_score is not none %}
-                                            {{ "%.2f"|format(candidate.final_match_score) }}%
+                                            {{ "%.1f"|format(candidate.final_match_score) }}%
                                         {% else %}
                                             N/A
                                         {% endif %}
@@ -209,8 +232,8 @@
 
             <!-- Candidate Rankings -->
             <div class="card">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0">Candidate Rankings for {{ selected_job.title }} at {{ selected_job.company }}</h5>
+                <div class="card-header bg-gradient-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-trophy"></i> Candidate Rankings for {{ selected_job.title }} at {{ selected_job.company }}</h5>
                 </div>
                 <div class="card-body">
                     {% if ranked_candidates %}
@@ -225,40 +248,40 @@
                                         <th>Resume Similarity</th>
                                         <th>Skill Match</th>
                                         <th>Category</th>
-                                        <th>Action</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for candidate in ranked_candidates %}
                                         <tr>
                                             <td>
-                                                <strong>{{ candidate.rank }}</strong>
+                                                <span class="badge bg-primary">#{{ candidate.rank }}</span>
                                             </td>
                                             <td>
-                                                {{ candidate.application.applicant_name }}
+                                                <strong>{{ candidate.application.applicant_name }}</strong>
                                             </td>
-                                            <td>
-                                                {{ candidate.application.applicant_email }}
-                                            </td>
+                                            <td>{{ candidate.application.applicant_email }}</td>
                                             <td>
                                                 {% if candidate.final_match_score is not none %}
-                                                    <strong>{{ "%.2f"|format(candidate.final_match_score) }}%</strong>
+                                                    <span class="{% if candidate.final_match_score >= 70 %}score-high{% elif candidate.final_match_score >= 50 %}score-medium{% else %}score-low{% endif %}">
+                                                        {{ "%.1f"|format(candidate.final_match_score) }}%
+                                                    </span>
                                                 {% else %}
                                                     <span class="text-muted">Not Scored</span>
                                                 {% endif %}
                                             </td>
                                             <td>
                                                 {% if candidate.application.similarity_score is not none %}
-                                                    {{ "%.2f"|format(candidate.application.similarity_score) }}%
+                                                    {{ "%.1f"|format(candidate.application.similarity_score) }}%
                                                 {% elif candidate.application.match_score is not none %}
-                                                    {{ "%.2f"|format(candidate.application.match_score) }}%
+                                                    {{ "%.1f"|format(candidate.application.match_score) }}%
                                                 {% else %}
                                                     N/A
                                                 {% endif %}
                                             </td>
                                             <td>
                                                 {% if candidate.application.skill_match_score is not none %}
-                                                    {{ "%.2f"|format(candidate.application.skill_match_score) }}%
+                                                    {{ "%.1f"|format(candidate.application.skill_match_score) }}%
                                                 {% else %}
                                                     N/A
                                                 {% endif %}
@@ -278,12 +301,14 @@
                                                 {% endif %}
                                             </td>
                                             <td>
-                                                <a href="{{ url_for('main.application_details', application_id=candidate.application.id) }}" class="btn btn-sm btn-info">
-                                                    View Analysis
-                                                </a>
-                                                <a href="{{ url_for('main.download_resume', application_id=candidate.application.id) }}" class="btn btn-sm btn-success">
-                                                    Download Resume
-                                                </a>
+                                                <div class="btn-group" role="group">
+                                                    <a href="{{ url_for('main.application_details', application_id=candidate.application.id) }}" class="btn btn-sm btn-info">
+                                                        <i class="bi bi-graph-up"></i> Analysis
+                                                    </a>
+                                                    <a href="{{ url_for('main.download_resume', application_id=candidate.application.id) }}" class="btn btn-sm btn-success">
+                                                        <i class="bi bi-download"></i> Resume
+                                                    </a>
+                                                </div>
                                             </td>
                                         </tr>
                                     {% endfor %}
@@ -291,8 +316,12 @@
                             </table>
                         </div>
                     {% else %}
-                        <div class="alert alert-info">
-                            No applications have been submitted for this job yet.
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <i class="bi bi-people"></i>
+                            </div>
+                            <h3 class="empty-state-text">No Applications Yet</h3>
+                            <p class="text-muted">No applications have been submitted for this job yet.</p>
                         </div>
                     {% endif %}
                 </div>
@@ -301,15 +330,19 @@
         {% else %}
 
             <!-- No job selected -->
-            <div class="alert alert-info">
-                Please select a job to view candidate rankings.
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="bi bi-search"></i>
+                </div>
+                <h3 class="empty-state-text">Select a Job to View Candidates</h3>
+                <p class="text-muted">Please select a job from the dropdown above to view candidate rankings and screening results.</p>
             </div>
 
         {% endif %}
 
         <!-- Important Notice -->
         <div class="alert alert-warning mt-4">
-            <strong>Important Notice:</strong> Candidate rankings are based on resume-to-job matching metrics and are intended to support human review. Final hiring decisions should be made by a qualified human reviewer.
+            <strong><i class="bi bi-exclamation-triangle"></i> Important Notice:</strong> Candidate rankings are based on resume-to-job matching metrics and are intended to support human review. Final hiring decisions should be made by a qualified human reviewer.
         </div>
 
     </div>
